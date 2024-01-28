@@ -8,11 +8,15 @@ public abstract class Statement {
     public interface Visitor<R> {
         R visitBlockStatement(BlockStatement statement);
         R visitExpressionStatement(ExpressionStatement statement);
+        R visitFunctionStatement(FunctionStatement statement);
         R visitIfStatement(IfStatement statement);
         R visitSayStatement(SayStatement statement);
         R visitLetStatement(LetStatement statement);
+        R visitRepeatStatement(RepeatStatement statement);
+        R visitReturnStatement(ReturnStatement statement);
         R visitWhileStatement(WhileStatement statement);
     }
+
     public static class BlockStatement extends Statement {
 
         public final List<Statement> statements;
@@ -26,6 +30,7 @@ public abstract class Statement {
             return visitor.visitBlockStatement(this);
         }
     }
+
     public static class ExpressionStatement extends Statement {
 
         public final Expression expr;
@@ -39,6 +44,25 @@ public abstract class Statement {
             return visitor.visitExpressionStatement(this);
         }
     }
+
+    public static class FunctionStatement extends Statement {
+        public final Token name;
+        public final List<Token> params;
+        public final List<Statement> body;
+
+        public FunctionStatement(Token name, List<Token> params, List<Statement> body) {
+            this.name = name;
+            this.params = params;
+            this.body = body;
+        }
+
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitFunctionStatement(this);
+        }
+    }
+
     public static class IfStatement extends Statement {
 
         public final Expression condition;
@@ -56,6 +80,7 @@ public abstract class Statement {
             return visitor.visitIfStatement(this);
         }
     }
+
     public static class SayStatement extends Statement {
 
         public final Expression expr;
@@ -69,6 +94,7 @@ public abstract class Statement {
             return visitor.visitSayStatement(this);
         }
     }
+
     public static class LetStatement extends Statement {
 
         public final Token name;
@@ -84,6 +110,38 @@ public abstract class Statement {
             return visitor.visitLetStatement(this);
         }
     }
+
+    public static class RepeatStatement extends Statement {
+        public final Expression delay;
+        public final Statement body;
+
+        public RepeatStatement(Expression delay, Statement body) {
+            this.delay = delay;
+            this.body = body;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitRepeatStatement(this);
+        }
+    }
+
+    public static class ReturnStatement extends Statement {
+
+        public final Token keyword;
+        public final Expression value;
+
+        public ReturnStatement(Token keyword, Expression value) {
+            this.keyword = keyword;
+            this.value = value;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitReturnStatement(this);
+        }
+    }
+
     public static class WhileStatement extends Statement {
 
         public final Expression condition;

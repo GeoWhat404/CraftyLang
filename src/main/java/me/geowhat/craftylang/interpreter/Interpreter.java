@@ -3,27 +3,151 @@ package me.geowhat.craftylang.interpreter;
 import me.geowhat.craftylang.client.CraftyLangClient;
 import me.geowhat.craftylang.client.CraftyLangSettings;
 import me.geowhat.craftylang.client.util.Message;
+import me.geowhat.craftylang.client.util.Scheduler;
 import me.geowhat.craftylang.interpreter.ast.Expression;
 import me.geowhat.craftylang.interpreter.ast.Statement;
+import me.geowhat.craftylang.interpreter.error.Return;
 import me.geowhat.craftylang.interpreter.error.RuntimeError;
+import me.geowhat.craftylang.mixin.MinecraftAccessor;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.minecraft.client.Minecraft;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
 
-    private Environment environment = new Environment();
+    public final Environment globals = new Environment();
+    private Environment environment = globals;
+
+    private boolean shouldStopExecution = false;
+
+    public Interpreter() {
+        registerGlobals();
+    }
+
+    private void registerGlobals() {
+        globals.define("VERSION", CraftyLangClient.VERSION);
+
+        assert Minecraft.getInstance().player != null;
+        globals.redefine("xc", Math.round(Minecraft.getInstance().player.getX()));
+        globals.redefine("yc", Math.round(Minecraft.getInstance().player.getY()));
+        globals.redefine("zc", Math.round(Minecraft.getInstance().player.getZ()));
+
+        ClientTickEvents.END_CLIENT_TICK.register(event -> {
+            if (Minecraft.getInstance().player != null) {
+                globals.redefine("xc", Math.round(Minecraft.getInstance().player.getX()));
+                globals.redefine("yc", Math.round(Minecraft.getInstance().player.getY()));
+                globals.redefine("zc", Math.round(Minecraft.getInstance().player.getZ()));
+            }
+        });
+
+        globals.define("glob", new CraftScriptCallable() {
+            @Override
+            public int arity() {
+                return 1;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> args) {
+                Message.sendGlobal(stringify(args.get(0)));
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return "<builtin fn>";
+            }
+        });
+
+        globals.define("close", new CraftScriptCallable() {
+            @Override
+            public int arity() {
+                return 1;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> args) {
+                Minecraft.getInstance().setScreen(null);
+                Message.sendInfo("Closed screen with code " + stringify(args.get(0)));
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return "<builtin fn>";
+            }
+        });
+
+        globals.define("exit", new CraftScriptCallable() {
+            @Override
+            public int arity() {
+                return 1;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> args) {
+                Minecraft.getInstance().setScreen(null);
+                Message.sendInfo("Exited with code " + stringify(args.get(0)));
+                shouldStopExecution = true;
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return "<builtin fn>";
+            }
+        });
+
+        globals.define("str", new CraftScriptCallable() {
+            @Override
+            public int arity() {
+                return 1;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> args) {
+                return stringify(args.get(0));
+            }
+
+            @Override
+            public String toString() {
+                return "<builtin fn>";
+            }
+        });
+
+        globals.define("attack", new CraftScriptCallable() {
+            @Override
+            public int arity() {
+                return 1;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> args) {
+                MinecraftAccessor mca = (MinecraftAccessor) Minecraft.getInstance();
+                mca.attack();
+
+                return null;
+            }
+        });
+    }
 
     public void interpret(List<Statement> statements) {
-        environment.define("VERSION", CraftyLangClient.VERSION);
+        environment = globals;
+
         try {
             for (Statement statement : statements) {
+                if (shouldStopExecution)
+                    return;
+
                 execute(statement);
+
             }
         } catch (RuntimeError err) {
             CraftScript.runtimeError(err);
         }
-    }
 
+    }
 
     // ==================================
     // EXPRESSIONS
@@ -94,6 +218,30 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
+    public Object visitCallExpression(Expression.CallExpression expr) {
+        Object callee = evaluate(expr.callee);
+
+        List<Object> arguments = new ArrayList<>();
+        if (!expr.args.isEmpty()) {
+            for (Expression arg : expr.args) {
+                arguments.add(evaluate(arg));
+            }
+        }
+
+        if (!(callee instanceof CraftScriptCallable)) {
+            throw new RuntimeError(expr.paren, "Can only call functions and classes");
+        }
+
+        CraftScriptCallable function = (CraftScriptCallable) callee;
+
+        if (arguments.size() != function.arity()) {
+            throw new RuntimeError(expr.paren, "Expected " + function.arity() + " parameters but got " + arguments.size());
+        }
+
+        return function.call(this, arguments);
+    }
+
+    @Override
     public Object visitGroupingExpression(Expression.GroupingExpression expr) {
         return evaluate(expr.expr);
     }
@@ -156,6 +304,13 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
+    public Void visitFunctionStatement(Statement.FunctionStatement statement) {
+        CraftScriptFunction function = new CraftScriptFunction(statement);
+        environment.define(statement.name.lexeme(), function);
+        return null;
+    }
+
+    @Override
     public Void visitIfStatement(Statement.IfStatement statement) {
         if (isTruthy(evaluate(statement.condition))) {
             execute(statement.thenBranch);
@@ -189,6 +344,29 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
+    public Void visitRepeatStatement(Statement.RepeatStatement statement) {
+
+        if (statement.delay == null) {
+            return null;
+        }
+
+        long delay = Long.parseLong(stringify(evaluate(statement.delay)));
+        int counter = 0;
+
+        Scheduler.repeat(() -> execute(statement.body), delay * 50L, CraftyLangSettings.LIMIT_WHILE_LOOP ? CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS : Integer.MAX_VALUE);
+        return null;
+    }
+
+    @Override
+    public Void visitReturnStatement(Statement.ReturnStatement statement) {
+        Object value = null;
+        if (statement.value != null)
+            value = evaluate(statement.value);
+
+        throw new Return(value);
+    }
+
+    @Override
     public Void visitWhileStatement(Statement.WhileStatement statement) {
         int counter = 0;
 
@@ -211,7 +389,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         statement.accept(this);
     }
 
-    private void executeBlock(List<Statement> statements, Environment environment) {
+    public void executeBlock(List<Statement> statements, Environment environment) {
         Environment current = this.environment;
         try {
             this.environment = environment;
@@ -264,8 +442,9 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
         if (obj instanceof Double) {
             String txt = obj.toString();
-            if (txt.endsWith(".0"))
+            if (txt.endsWith(".0")) {
                 txt = txt.substring(0, txt.length() - 2);
+            }
             return txt;
         }
 

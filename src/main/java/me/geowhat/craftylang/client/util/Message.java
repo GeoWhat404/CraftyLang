@@ -33,4 +33,9 @@ public class Message {
     public static void sendDebug(String message) {
         send(Component.literal(craftyHeader.replace("§x", "§e") + "§e" + message));
     }
+
+    public static void sendGlobal(String message) {
+        if (Minecraft.getInstance().player != null)
+            Minecraft.getInstance().player.connection.sendChat(message);
+    }
 }

@@ -1,11 +1,16 @@
 package me.geowhat.craftylang.client;
 
+import me.geowhat.craftylang.client.util.Scheduler;
+import me.geowhat.craftylang.interpreter.CraftScript;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class CraftyLangClient implements ClientModInitializer {
 
@@ -28,6 +33,7 @@ public class CraftyLangClient implements ClientModInitializer {
 
             CraftyLangSettings.LIMIT_WHILE_LOOP = config.isLimitWhileLoop();
             CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS = config.getMaxWhileLoopIteration();
+            CraftyLangSettings.MAX_FUNCTION_ARGS = config.getMaxFunctionArgs();
 
         } catch (IOException e) {
             logger.error("Config file not found, creating a new one");
@@ -35,8 +41,11 @@ public class CraftyLangClient implements ClientModInitializer {
         }
 
         ClientLifecycleEvents.CLIENT_STOPPING.register(event -> {
+            CraftScript.executorService.shutdown();
+
             config.setLimitWhileLoop(CraftyLangSettings.LIMIT_WHILE_LOOP);
             config.setMaxWhileLoopIteration(CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS);
+            config.setMaxFunctionArgs(CraftyLangSettings.MAX_FUNCTION_ARGS);
             config.saveJsonFile(configFile);
         });
     }

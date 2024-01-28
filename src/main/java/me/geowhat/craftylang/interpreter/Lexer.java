@@ -220,5 +220,6 @@ public class Lexer {
         keywords.put("T", TokenType.TRUE);
         keywords.put("let", TokenType.LET);
         keywords.put("while", TokenType.WHILE);
+        keywords.put("rep", TokenType.REPEAT);
     }
 }

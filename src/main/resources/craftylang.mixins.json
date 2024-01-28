@@ -6,7 +6,8 @@
   "mixins": [
   ],
   "client": [
-    "BookEditScreenMixin"
+    "BookEditScreenMixin",
+    "MinecraftAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

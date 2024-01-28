@@ -6,6 +6,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -17,9 +18,11 @@ public class CraftyConfigurationScreen extends Screen {
     private static final String title = "CraftyLang Configuration Menu";
 
     private int maxWhileLimit = 2048;
+    private int maxFunctionArgs = 2048;
 
     private Button enableWhileLoopLimitButton;
     private AbstractSliderButton whileLoopLimitSlider;
+    private AbstractSliderButton functionArgsLimitSlider;
 
     private final int baseWidth = 200;
     private final int baseHeight = 20;
@@ -66,10 +69,27 @@ public class CraftyConfigurationScreen extends Screen {
             }
         };
 
+        functionArgsLimitSlider = new AbstractSliderButton(width / 2 - baseWidth / 2, 50 + 2 * (baseHeight + 4), baseWidth, baseHeight, CommonComponents.EMPTY, (double) CraftyLangSettings.MAX_FUNCTION_ARGS / maxFunctionArgs) {
+
+            @Override
+            protected void updateMessage() {
+                this.setMessage(Component.literal(String.valueOf(CraftyLangSettings.MAX_FUNCTION_ARGS)));
+            }
+
+            @Override
+            protected void applyValue() {
+                CraftyLangSettings.MAX_FUNCTION_ARGS = (int) Math.floor(Mth.clampedLerp(0.0, maxFunctionArgs, this.value));
+            }
+        };
+
+        functionArgsLimitSlider.setTooltip(Tooltip.create(Component.literal("Maximum number of arguments in a function call")));
+
         // set the correct value (cursed++)
         whileLoopLimitSlider.onClick(calculateValue(whileLoopLimitSlider, (double) CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS / maxWhileLimit), 0);
+        functionArgsLimitSlider.onClick(calculateValue(whileLoopLimitSlider, (double) CraftyLangSettings.MAX_FUNCTION_ARGS / maxFunctionArgs), 0);
 
         addRenderableWidget(enableWhileLoopLimitButton);
         addRenderableWidget(whileLoopLimitSlider);
+        addRenderableWidget(functionArgsLimitSlider);
     }
 }

@@ -1,5 +1,7 @@
 package me.geowhat.craftylang.interpreter.ast;
 
+import com.sun.jna.platform.win32.WinNT;
+import me.geowhat.craftylang.client.CraftyLangSettings;
 import me.geowhat.craftylang.interpreter.CraftScript;
 import me.geowhat.craftylang.interpreter.Token;
 import me.geowhat.craftylang.interpreter.TokenType;
@@ -28,9 +30,11 @@ public class Parser {
 
     private Statement declaration() {
         try {
-            if (match(TokenType.LET)) {
+            if (match(TokenType.FUNCTION))
+                return function("function");
+
+            if (match(TokenType.LET))
                 return varDeclaration();
-            }
             return statement();
         } catch (ParseError err) {
             synchronize();
@@ -49,8 +53,12 @@ public class Parser {
             return ifStatement();
         if (match(TokenType.SAY))
             return sayStatement();
+        if (match(TokenType.RETURN))
+            return returnStatement();
         if (match(TokenType.WHILE))
             return whileStatement();
+        if (match(TokenType.REPEAT))
+            return repeatStatement();
         if (match(TokenType.LEFT_BRACE))
             return new Statement.BlockStatement(block());
 
@@ -111,6 +119,15 @@ public class Parser {
         return new Statement.LetStatement(name, initializer);
     }
 
+    private Statement repeatStatement() {
+        consume(TokenType.LEFT_PAREN, "Expected a \"(\" after \"repeat\"");
+        Expression delay = expression();
+        consume(TokenType.RIGHT_PAREN, "Expected a \")\" after while condition");
+        Statement body = statement();
+
+        return new Statement.RepeatStatement(delay, body);
+    }
+
     private Statement whileStatement() {
         consume(TokenType.LEFT_PAREN, "Expected a \"(\" after \"while\"");
         Expression condition = expression();
@@ -141,10 +158,42 @@ public class Parser {
         return new Statement.SayStatement(value);
     }
 
+    private Statement returnStatement() {
+        Token keyword = previous();
+        Expression value = null;
+        if (!check(TokenType.SEMICOLON)) {
+            value = expression();
+        }
+
+        consume(TokenType.SEMICOLON, "Expected a \";\" after return value");
+        return new Statement.ReturnStatement(keyword, value);
+    }
+
     private Statement expressionStatement() {
         Expression expr = expression();
         consume(TokenType.SEMICOLON, "Expected a \";\" after expression");
         return new Statement.ExpressionStatement(expr);
+    }
+
+    private Statement.FunctionStatement function(String kind) {
+        Token name = consume(TokenType.IDENTIFIER, "Expected " + kind + " name");
+        consume(TokenType.LEFT_PAREN, "Expected \"(\" after " + kind + "name");
+        List<Token> params = new ArrayList<>();
+        if (!check(TokenType.RIGHT_PAREN)) {
+            do {
+                if (params.size() >= CraftyLangSettings.MAX_FUNCTION_ARGS) {
+                    error(peek(), "Cannot have more than " + CraftyLangSettings.MAX_FUNCTION_ARGS + " parameters");
+                }
+
+                params.add(consume(TokenType.IDENTIFIER, "Expected parameter name"));
+            } while (match(TokenType.COMMA));
+        }
+
+        consume(TokenType.RIGHT_PAREN, "Expected a \")\" after parameters");
+
+        consume(TokenType.LEFT_BRACE, "Expected a \"{\" before " + kind + "body");
+        List<Statement> body = block();
+        return new Statement.FunctionStatement(name, params, body);
     }
 
     private List<Statement> block() {
@@ -256,7 +305,37 @@ public class Parser {
             return new Expression.UnaryExpression(operator, right);
         }
 
-        return primary();
+        return call();
+    }
+
+    private Expression call() {
+        Expression expr = primary();
+
+        while (true) {
+            if (match(TokenType.LEFT_PAREN)) {
+                expr = finishCall(expr);
+            } else {
+                break;
+            }
+        }
+
+        return expr;
+    }
+
+    private Expression finishCall(Expression callee) {
+        List<Expression> args = new ArrayList<>();
+
+        if (!check(TokenType.LEFT_PAREN)) {
+            do {
+                if (args.size() >= CraftyLangSettings.MAX_FUNCTION_ARGS) {
+                    error(peek(), "Maximum function arguments reached");
+                }
+                args.add(expression());
+            } while (match(TokenType.COMMA));
+        }
+
+        Token paren = consume(TokenType.RIGHT_PAREN, "Expected a \")\" after arguments");
+        return new Expression.CallExpression(callee, paren, args);
     }
 
     private Expression primary() {

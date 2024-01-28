@@ -2,11 +2,14 @@ package me.geowhat.craftylang.interpreter.ast;
 
 import me.geowhat.craftylang.interpreter.Token;
 
+import java.util.List;
+
 public abstract class Expression {
 
     public interface Visitor<R> {
         R visitAssignExpression(AssignExpression expr);
         R visitBinaryExpression(BinaryExpression expr);
+        R visitCallExpression(CallExpression expr);
         R visitGroupingExpression(GroupingExpression expr);
         R visitLiteralExpression(LiteralExpression expr);
         R visitLogicalExpression(LogicalExpression expr);
@@ -44,6 +47,24 @@ public abstract class Expression {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitBinaryExpression(this);
+        }
+    }
+
+    public static class CallExpression extends Expression {
+
+        public final Expression callee;
+        public final Token paren;
+        public final List<Expression> args;
+
+        public CallExpression(Expression callee, Token paren, List<Expression> args) {
+            this.callee = callee;
+            this.paren = paren;
+            this.args = args;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitCallExpression(this);
         }
     }
 

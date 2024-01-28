@@ -1,18 +1,23 @@
 package me.geowhat.craftylang.interpreter;
 
 import me.geowhat.craftylang.client.util.Message;
+import me.geowhat.craftylang.client.util.Scheduler;
 import me.geowhat.craftylang.interpreter.ast.Parser;
 import me.geowhat.craftylang.interpreter.ast.Statement;
 import me.geowhat.craftylang.interpreter.error.RuntimeError;
 
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class CraftScript {
 
     private static boolean hadError;
     private static boolean hadRuntimeError;
+    public static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
     public static void run(String src) {
+        Scheduler.startExecution();
 
         hadError = false;
         hadRuntimeError = false;
@@ -21,7 +26,6 @@ public class CraftScript {
         List<Token> tokens = lexer.lex();
         Parser parser = new Parser(tokens);
         List<Statement> statements = parser.parse();
-
         Interpreter interpreter = new Interpreter();
 
         if (hadError) {

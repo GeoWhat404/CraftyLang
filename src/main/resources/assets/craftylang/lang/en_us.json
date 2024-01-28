@@ -1,4 +1,5 @@
 {
   "category.craftylang.keys": "CraftyLang Keybindings",
-  "key.craftylang.config": "Open configuration menu"
+  "key.craftylang.config": "Open configuration menu",
+  "key.craftylang.kill_exec": "Kill any running program"
 }

@@ -42,6 +42,17 @@ public class Environment {
     public void define(String name, Object value) {
         values.put(name, value);
     }
+
+    public void redefine(String name, Object value) {
+        if (isDefined(name)) {
+
+            if (values.get(name) != value)
+                values.replace(name, value);
+        } else {
+            define(name, value);
+        }
+    }
+
     public void assign(Token token, Object value) {
         if (isDefined(token)) {
             values.put(token.lexeme(), value);

@@ -10,6 +10,8 @@ public class Configuration {
     private int maxWhileLoopIteration;
     private boolean limitWhileLoop;
 
+    private int maxFunctionArgs;
+
     private static boolean configExists(String filepath) {
         return new File(filepath).exists();
     }
@@ -55,5 +57,13 @@ public class Configuration {
 
     public boolean isLimitWhileLoop() {
         return limitWhileLoop;
+    }
+
+    public int getMaxFunctionArgs() {
+        return maxFunctionArgs;
+    }
+
+    public void setMaxFunctionArgs(int max) {
+        this.maxFunctionArgs = max;
     }
 }
