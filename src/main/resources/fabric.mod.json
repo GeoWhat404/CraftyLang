@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "craftylang",
+  "version": "${version}",
+  "name": "CraftyLang",
+  "description": "Allows scripting in books that can be executed",
+  "authors": [
+    "GeoWhat"
+  ],
+  "contact": {
+    "repo": "https://github.com/GeoWhat/CraftyLang"
+  },
+  "license": "GPL-3.0",
+  "icon": "assets/craftylang/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "me.geowhat.craftylang.client.CraftyLangClient"
+    ],
+    "main": [
+      "me.geowhat.craftylang.CraftyLang"
+    ]
+  },
+  "mixins": [
+    "craftylang.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
