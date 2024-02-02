@@ -8,7 +8,6 @@ import java.io.*;
 public class Configuration {
 
     private int maxWhileLoopIteration;
-    private boolean limitWhileLoop;
 
     private int maxFunctionArgs;
 
@@ -47,16 +46,8 @@ public class Configuration {
         maxWhileLoopIteration = limit;
     }
 
-    public void setLimitWhileLoop(boolean value) {
-        limitWhileLoop = value;
-    }
-
     public int getMaxWhileLoopIteration() {
         return maxWhileLoopIteration;
-    }
-
-    public boolean isLimitWhileLoop() {
-        return limitWhileLoop;
     }
 
     public int getMaxFunctionArgs() {

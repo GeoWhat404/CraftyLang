@@ -1,5 +1,6 @@
 package me.geowhat.craftylang.interpreter;
 
+import me.geowhat.craftylang.CraftyLang;
 import me.geowhat.craftylang.client.CraftyLangClient;
 import me.geowhat.craftylang.client.CraftyLangSettings;
 import me.geowhat.craftylang.client.util.Message;
@@ -14,6 +15,7 @@ import net.minecraft.client.Minecraft;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
 
@@ -24,6 +26,20 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     public Interpreter() {
         registerGlobals();
+    }
+
+    public void exitInterpreter(int code) {
+        Scheduler.stopExecution();
+
+        shouldStopExecution = true;
+
+        switch (code) {
+            case CraftScript.SUCCESS_CODE -> Message.sendSuccess("Program execution finished with code " + code);
+            case CraftScript.PARSE_ERROR_CODE,
+                 CraftScript.RUNTIME_ERROR_CODE -> Message.sendError("Program execution finished with code " + code + ".");
+            case CraftScript.USER_REQUEST_CODE -> Message.sendSuccess("Program execution finished as per user request (" + code + ")");
+        }
+        Message.sendNewline();
     }
 
     private void registerGlobals() {
@@ -63,19 +79,31 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         globals.define("close", new CraftScriptCallable() {
             @Override
             public int arity() {
-                return 1;
+                return 0;
             }
 
             @Override
             public Object call(Interpreter interpreter, List<Object> args) {
                 Minecraft.getInstance().setScreen(null);
-                Message.sendInfo("Closed screen with code " + stringify(args.get(0)));
                 return null;
             }
 
             @Override
             public String toString() {
                 return "<builtin fn>";
+            }
+        });
+
+        globals.define("clear", new CraftScriptCallable() {
+            @Override
+            public int arity() {
+                return 0;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> args) {
+                Minecraft.getInstance().gui.getChat().clearMessages(true);
+                return null;
             }
         });
 
@@ -88,8 +116,8 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             @Override
             public Object call(Interpreter interpreter, List<Object> args) {
                 Minecraft.getInstance().setScreen(null);
-                Message.sendInfo("Exited with code " + stringify(args.get(0)));
-                shouldStopExecution = true;
+                int code = Integer.parseInt(stringify(args.get(0)));
+                CraftScript.kill(code);
                 return null;
             }
 
@@ -183,11 +211,9 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
                 return (double) left <= (double) right;
 
             case BANG_EQUAL:
-                checkNumberOperand(expr.operator, left, right);
                 return !isEqual(left, right);
 
             case EQUAL_EQUAL:
-                checkNumberOperand(expr.operator, left, right);
                 return isEqual(left, right);
 
             case MINUS:
@@ -212,6 +238,10 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
                 }
 
                 throw new RuntimeError(expr.operator, "Operands must be of type number or string");
+
+            case MOD:
+                checkNumberOperand(expr.operator, right);
+                return (double) left % (double) right;
         }
 
         throw new RuntimeError(expr.operator, "Operator type `" + expr.operator.type().toString().toLowerCase() + "` is not suitable for BinaryExpression");
@@ -353,7 +383,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         long delay = Long.parseLong(stringify(evaluate(statement.delay)));
         int counter = 0;
 
-        Scheduler.repeat(() -> execute(statement.body), delay * 50L, CraftyLangSettings.LIMIT_WHILE_LOOP ? CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS : Integer.MAX_VALUE);
+        Scheduler.repeat(() -> execute(statement.body), delay * 50L, CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS);
         return null;
     }
 
@@ -371,7 +401,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         int counter = 0;
 
         while (isTruthy(evaluate(statement.condition))) {
-            if (counter++ > CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS && CraftyLangSettings.LIMIT_WHILE_LOOP) {
+            if (counter++ > CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS) {
                 Message.sendError("While loop iteration limit reached (" + CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS + ")");
                 break;
             }

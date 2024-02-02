@@ -2,6 +2,7 @@ package me.geowhat.craftylang.client;
 
 import me.geowhat.craftylang.client.util.Scheduler;
 import me.geowhat.craftylang.interpreter.CraftScript;
+import me.geowhat.craftylang.interpreter.Keywords;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import org.apache.logging.log4j.LogManager;
@@ -25,13 +26,14 @@ public class CraftyLangClient implements ClientModInitializer {
     public void onInitializeClient() {
         logger.info("CraftyLang started");
 
+        CraftScript.init();
+        Keywords.addKeywords();
         KeyBindings.register();
 
         logger.info("Loading config file");
         try {
             config = Configuration.fromJson(configFile);
 
-            CraftyLangSettings.LIMIT_WHILE_LOOP = config.isLimitWhileLoop();
             CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS = config.getMaxWhileLoopIteration();
             CraftyLangSettings.MAX_FUNCTION_ARGS = config.getMaxFunctionArgs();
 
@@ -43,7 +45,6 @@ public class CraftyLangClient implements ClientModInitializer {
         ClientLifecycleEvents.CLIENT_STOPPING.register(event -> {
             CraftScript.executorService.shutdown();
 
-            config.setLimitWhileLoop(CraftyLangSettings.LIMIT_WHILE_LOOP);
             config.setMaxWhileLoopIteration(CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS);
             config.setMaxFunctionArgs(CraftyLangSettings.MAX_FUNCTION_ARGS);
             config.saveJsonFile(configFile);

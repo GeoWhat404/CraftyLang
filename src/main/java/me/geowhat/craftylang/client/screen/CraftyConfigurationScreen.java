@@ -20,7 +20,6 @@ public class CraftyConfigurationScreen extends Screen {
     private int maxWhileLimit = 2048;
     private int maxFunctionArgs = 2048;
 
-    private Button enableWhileLoopLimitButton;
     private AbstractSliderButton whileLoopLimitSlider;
     private AbstractSliderButton functionArgsLimitSlider;
 
@@ -42,21 +41,7 @@ public class CraftyConfigurationScreen extends Screen {
 
     @Override
     protected void init() {
-        enableWhileLoopLimitButton = Button.builder(Component.literal(ConfigScreenSettings.canChangeWhileLoopLimit ? "Disable while loop limit" : "Enable while loop limit"), button -> {
-            if (ConfigScreenSettings.canChangeWhileLoopLimit) {
-                ConfigScreenSettings.canChangeWhileLoopLimit = false;
-                CraftyLangSettings.LIMIT_WHILE_LOOP = false;
-                enableWhileLoopLimitButton.setMessage(Component.literal("Enable while loop limit"));
-            } else {
-                CraftyLangSettings.LIMIT_WHILE_LOOP = true;
-                ConfigScreenSettings.canChangeWhileLoopLimit = true;
-                enableWhileLoopLimitButton.setMessage(Component.literal("Disable while loop limit"));
-            }
-            whileLoopLimitSlider.active = ConfigScreenSettings.canChangeWhileLoopLimit;
-
-        }).bounds(width / 2 - baseWidth / 2, 50, baseWidth, baseHeight).build();
-
-        whileLoopLimitSlider = new AbstractSliderButton(width / 2 - baseWidth / 2, 50 + baseHeight + 4, baseWidth, baseHeight, CommonComponents.EMPTY, (double) CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS / maxWhileLimit) {
+        whileLoopLimitSlider = new AbstractSliderButton(width / 2 - baseWidth / 2, this.height / 4, baseWidth, baseHeight, CommonComponents.EMPTY, (double) CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS / maxWhileLimit) {
 
             @Override
             protected void updateMessage() {
@@ -68,8 +53,9 @@ public class CraftyConfigurationScreen extends Screen {
                 CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS = (int) Math.floor(Mth.clampedLerp(0.0, maxWhileLimit, this.value));
             }
         };
+        whileLoopLimitSlider.setTooltip(Tooltip.create(Component.literal("Adjust the maximum loop iteration (made to not crash your game)")));
 
-        functionArgsLimitSlider = new AbstractSliderButton(width / 2 - baseWidth / 2, 50 + 2 * (baseHeight + 4), baseWidth, baseHeight, CommonComponents.EMPTY, (double) CraftyLangSettings.MAX_FUNCTION_ARGS / maxFunctionArgs) {
+        functionArgsLimitSlider = new AbstractSliderButton(width / 2 - baseWidth / 2, this.height / 4 + baseHeight + 4, baseWidth, baseHeight, CommonComponents.EMPTY, (double) CraftyLangSettings.MAX_FUNCTION_ARGS / maxFunctionArgs) {
 
             @Override
             protected void updateMessage() {
@@ -81,14 +67,12 @@ public class CraftyConfigurationScreen extends Screen {
                 CraftyLangSettings.MAX_FUNCTION_ARGS = (int) Math.floor(Mth.clampedLerp(0.0, maxFunctionArgs, this.value));
             }
         };
-
         functionArgsLimitSlider.setTooltip(Tooltip.create(Component.literal("Maximum number of arguments in a function call")));
 
         // set the correct value (cursed++)
         whileLoopLimitSlider.onClick(calculateValue(whileLoopLimitSlider, (double) CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS / maxWhileLimit), 0);
         functionArgsLimitSlider.onClick(calculateValue(whileLoopLimitSlider, (double) CraftyLangSettings.MAX_FUNCTION_ARGS / maxFunctionArgs), 0);
 
-        addRenderableWidget(enableWhileLoopLimitButton);
         addRenderableWidget(whileLoopLimitSlider);
         addRenderableWidget(functionArgsLimitSlider);
     }

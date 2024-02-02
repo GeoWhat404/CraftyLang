@@ -20,6 +20,7 @@ public class Scheduler {
             @Override
             public void run() {
                 if (count < repetitions && continueExecution) {
+
                     code.run();
                     count++;
 
@@ -27,7 +28,7 @@ public class Scheduler {
                 }
             }
         };
-        executor.schedule(repeatedTask, intervalMs, TimeUnit.MILLISECONDS);
+        repeatedTask.run();
     }
 
     public static void stopExecution() {
@@ -36,5 +37,9 @@ public class Scheduler {
 
     public static void startExecution() {
         continueExecution = true;
+    }
+
+    public static boolean isContinueExecution() {
+        return continueExecution;
     }
 }

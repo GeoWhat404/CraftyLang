@@ -9,7 +9,6 @@ import java.util.Map;
 
 public class Lexer {
 
-    private final Map<String, TokenType> keywords;
     private final String src;
     private final List<Token> tokens;
     private int start = 0;
@@ -17,12 +16,11 @@ public class Lexer {
     private int line = 1;
     private int page = 1;
 
+    private boolean moduleCode = false;
+
     public Lexer(String src) {
         this.src = src;
         this.tokens = new ArrayList<>();
-        this.keywords = new HashMap<>();
-
-        addKeywords();
     }
 
     public List<Token> lex() {
@@ -43,6 +41,8 @@ public class Lexer {
         char ch = advance();
 
         switch (ch) {
+            case '$': moduleCode = !moduleCode;              break;
+
             case '(': addToken(TokenType.LEFT_PAREN);   break;
             case ')': addToken(TokenType.RIGHT_PAREN);  break;
             case '{': addToken(TokenType.LEFT_BRACE);   break;
@@ -56,6 +56,7 @@ public class Lexer {
             case '/': addToken(TokenType.SLASH);        break;
             case '&': addToken(TokenType.AND);          break;
             case '|': addToken(TokenType.OR);           break;
+            case '%': addToken(TokenType.MOD);          break;
             case '!':
                 addToken(match('=') ? TokenType.BANG_EQUAL : TokenType.BANG);
                 break;
@@ -93,7 +94,7 @@ public class Lexer {
                 } else if (isAlpha(ch)) {
                     handleIdentifier();
                 } else {
-                    CraftScript.error(page, line, "Unexpected character: " + ch);
+                    CraftScript.error(page, line, "Unexpected character: " + ch + (moduleCode ? " in module" : ""));
                 }
 
                 break;
@@ -115,6 +116,9 @@ public class Lexer {
     }
 
     private void advanceLine() {
+        if (moduleCode)
+            return;
+
         if (line + 1 > 14) {
             page++;
             line = 1;
@@ -128,7 +132,8 @@ public class Lexer {
             advance();
 
         String value = src.substring(start, current);
-        TokenType type = keywords.get(value);
+        TokenType type = Keywords.keywords.get(value);
+
         if (type == null)
             type = TokenType.IDENTIFIER;
 
@@ -145,7 +150,7 @@ public class Lexer {
         }
 
         if (isAtEnd()) {
-            CraftScript.error(page, line, "Unterminated String");
+            CraftScript.error(page, line, "Unterminated String" + (moduleCode ? " in module" : ""));
             return;
         }
 
@@ -201,25 +206,5 @@ public class Lexer {
     private char peek(int offset) {
         if (current + offset > src.length()) return '\0';
         return src.charAt(current + offset);
-    }
-
-    private void addKeywords() {
-        //keywords.put("and", TokenType.AND);
-        keywords.put("unit", TokenType.UNIT);
-        keywords.put("else", TokenType.ELSE);
-        keywords.put("F", TokenType.FALSE);
-        keywords.put("fn", TokenType.FUNCTION);
-        keywords.put("for", TokenType.FOR);
-        keywords.put("if", TokenType.IF);
-        keywords.put("null", TokenType.NULL);
-        //keywords.put("or", TokenType.OR);
-        keywords.put("say", TokenType.SAY);
-        keywords.put("ret", TokenType.RETURN);
-        keywords.put("sup", TokenType.SUPER);
-        keywords.put("this", TokenType.THIS);
-        keywords.put("T", TokenType.TRUE);
-        keywords.put("let", TokenType.LET);
-        keywords.put("while", TokenType.WHILE);
-        keywords.put("rep", TokenType.REPEAT);
     }
 }

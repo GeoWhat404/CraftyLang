@@ -1,19 +1,28 @@
 package me.geowhat.craftylang.mixin;
 
 import me.geowhat.craftylang.client.util.Message;
-import me.geowhat.craftylang.interpreter.CraftScript;
+import me.geowhat.craftylang.interpreter.*;
+import me.geowhat.craftylang.interpreter.preprocessor.Resolver;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.BookEditScreen;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.WritableBookItem;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(BookEditScreen.class)
@@ -30,6 +39,7 @@ public abstract class BookEditScreenMixin extends Screen {
         super(component);
     }
 
+    @Mutable
     @Shadow @Final private List<String> pages;
 
     @Shadow protected abstract void saveChanges(boolean bl);
@@ -48,6 +58,18 @@ public abstract class BookEditScreenMixin extends Screen {
 
     @Shadow protected abstract void clearDisplayCache();
 
+    @Shadow protected abstract void setCurrentPageText(String string);
+
+    @Shadow protected abstract String getCurrentPageText();
+
+    @Shadow @Final private TextFieldHelper titleEdit;
+
+    @Shadow @Final private TextFieldHelper pageEdit;
+
+    @Shadow public abstract boolean keyPressed(int i, int j, int k);
+
+    @Shadow private int lastIndex;
+
     @Unique
     private void updatePageMessage() {
         if (!this.savedChanges)
@@ -63,8 +85,9 @@ public abstract class BookEditScreenMixin extends Screen {
     }
 
     @Inject(method = "charTyped", at = @At("HEAD"))
-    public void charTyped(char c, int i, CallbackInfoReturnable<Boolean> cir) {
+    public void charTyped(char ch, int i, CallbackInfoReturnable<Boolean> cir) {
         this.savedChanges = false;
+
         updatePageMessage();
     }
 
@@ -80,6 +103,7 @@ public abstract class BookEditScreenMixin extends Screen {
 
     @Inject(method = "changeLine", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/BookEditScreen;getDisplayCache()Lnet/minecraft/client/gui/screens/inventory/BookEditScreen$DisplayCache;"))
     public void changeLine(int i, CallbackInfo ci) {
+        // formation = "";
         updatePageMessage();
     }
 
@@ -106,9 +130,17 @@ public abstract class BookEditScreenMixin extends Screen {
     @Inject(method = "init", at = @At("HEAD"))
     public void addCustomButtons(CallbackInfo ci) {
         interpretButton = Button.builder(Component.literal("Run Code"), button -> {
+            this.isModified = true;
+            this.saveChanges(false);
+
+            // TODO: fix this because this is a bit too much for a mixin :D
             StringBuilder builder = new StringBuilder();
+            Resolver resolver = null;
+
             for (int i = 0; i < pages.size(); i++) {
-                builder.append(pages.get(i));
+                builder.append(new Resolver(pages.get(i)));
+                builder.append(pages.get(i).replaceAll("![A-Za-z]+ [A-Za-z0-9]+", ""));
+
                 if (i < pages.size() - 1) {
                     for (int j = 0; j < 14 - pages.get(i).split("\n").length + 1; j++) {
                         builder.append("\n");
@@ -117,12 +149,9 @@ public abstract class BookEditScreenMixin extends Screen {
             }
             CraftScript.run(builder.toString());
 
-            this.isModified = true;
-            this.saveChanges(false);
             this.currentPage = getNumPages() - 1;
             this.updateButtonVisibility();
             this.clearDisplayCache();
-            //this.updateLocalCopy(false);
 
         }).bounds(this.width / 2 - 100, 196 + baseButtonHeight + 5, baseButtonWidth, baseButtonHeight).build();
 

@@ -2,6 +2,7 @@ package me.geowhat.craftylang.interpreter.ast;
 
 import com.sun.jna.platform.win32.WinNT;
 import me.geowhat.craftylang.client.CraftyLangSettings;
+import me.geowhat.craftylang.client.util.Message;
 import me.geowhat.craftylang.interpreter.CraftScript;
 import me.geowhat.craftylang.interpreter.Token;
 import me.geowhat.craftylang.interpreter.TokenType;
@@ -277,7 +278,7 @@ public class Parser {
     private Expression term() {
         Expression expr = factor();
 
-        while (match(TokenType.PLUS, TokenType.MINUS)) {
+        while (match(TokenType.PLUS, TokenType.MINUS, TokenType.MOD)) {
             Token operator = previous();
             Expression right = factor();
             expr = new Expression.BinaryExpression(expr, operator, right);
@@ -325,7 +326,7 @@ public class Parser {
     private Expression finishCall(Expression callee) {
         List<Expression> args = new ArrayList<>();
 
-        if (!check(TokenType.LEFT_PAREN)) {
+        if (!check(TokenType.RIGHT_PAREN)) {
             do {
                 if (args.size() >= CraftyLangSettings.MAX_FUNCTION_ARGS) {
                     error(peek(), "Maximum function arguments reached");

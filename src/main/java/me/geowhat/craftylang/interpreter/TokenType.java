@@ -2,7 +2,7 @@ package me.geowhat.craftylang.interpreter;
 
 public enum TokenType {
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
-    COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
+    COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR, MOD,
 
     BANG, BANG_EQUAL,
     EQUAL, EQUAL_EQUAL,
@@ -13,6 +13,7 @@ public enum TokenType {
 
     AND, UNIT, ELSE, FALSE, FUNCTION, FOR, IF, NULL, OR,
     SAY, RETURN, SUPER, THIS, TRUE, LET, WHILE, REPEAT,
+    USE,
 
     END
 }

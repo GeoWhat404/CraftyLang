@@ -42,7 +42,10 @@ public class KeyBindings {
             }
 
             while (killKey.consumeClick()) {
-                Scheduler.stopExecution();
+                if (CraftScript.running || Scheduler.isContinueExecution()) {
+                    CraftScript.kill(CraftScript.USER_REQUEST_CODE);
+                    CraftScript.running = false;
+                }
             }
         });
     }
