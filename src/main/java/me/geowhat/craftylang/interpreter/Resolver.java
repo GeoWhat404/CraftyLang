@@ -203,14 +203,14 @@ public class Resolver implements Expression.Visitor<Void>, Statement.Visitor<Voi
     }
 
     private void beginScope() {
-        scopes.push(new HashMap<String, Boolean>());
+        scopes.push(new HashMap<>());
     }
 
     private void endScope() {
         scopes.pop();
     }
 
-    private static enum FunctionType {
+    private enum FunctionType {
         NONE,
         FUNCTION,
     }

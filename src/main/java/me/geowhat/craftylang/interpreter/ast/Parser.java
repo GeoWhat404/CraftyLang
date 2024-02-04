@@ -1,8 +1,6 @@
 package me.geowhat.craftylang.interpreter.ast;
 
-import com.sun.jna.platform.win32.WinNT;
 import me.geowhat.craftylang.client.CraftyLangSettings;
-import me.geowhat.craftylang.client.util.Message;
 import me.geowhat.craftylang.interpreter.CraftScript;
 import me.geowhat.craftylang.interpreter.Token;
 import me.geowhat.craftylang.interpreter.TokenType;

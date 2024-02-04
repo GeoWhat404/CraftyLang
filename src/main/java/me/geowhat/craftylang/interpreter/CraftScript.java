@@ -6,10 +6,7 @@ import me.geowhat.craftylang.interpreter.ast.Parser;
 import me.geowhat.craftylang.interpreter.ast.Statement;
 import me.geowhat.craftylang.interpreter.error.ModuleError;
 import me.geowhat.craftylang.interpreter.error.RuntimeError;
-import net.minecraft.client.Minecraft;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

@@ -1,7 +1,5 @@
 package me.geowhat.craftylang.interpreter;
 
-import me.geowhat.craftylang.client.util.Message;
-import me.geowhat.craftylang.interpreter.ast.Expression;
 import me.geowhat.craftylang.interpreter.error.RuntimeError;
 
 import java.util.HashMap;
@@ -79,6 +77,8 @@ public class Environment {
     public Environment ancestor(int distance) {
         Environment environment = this;
         for (int i = 0; i < distance; i++) {
+            if (environment == null)
+                continue;
             environment = environment.enclosing;
         }
 

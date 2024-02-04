@@ -5,7 +5,6 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
@@ -17,8 +16,8 @@ public class CraftyConfigurationScreen extends Screen {
 
     private static final String title = "CraftyLang Configuration Menu";
 
-    private int maxWhileLimit = 2048;
-    private int maxFunctionArgs = 2048;
+    private final int maxWhileLimit = 2048;
+    private final int maxFunctionArgs = 2048;
 
     private AbstractSliderButton whileLoopLimitSlider;
     private AbstractSliderButton functionArgsLimitSlider;

@@ -1,7 +1,6 @@
 package me.geowhat.craftylang.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import me.geowhat.craftylang.CraftyLang;
 import me.geowhat.craftylang.client.screen.CraftyConfigurationScreen;
 import me.geowhat.craftylang.client.util.Scheduler;
 import me.geowhat.craftylang.interpreter.CraftScript;
@@ -11,7 +10,6 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.concurrent.Executors;
 
 public class KeyBindings {
 

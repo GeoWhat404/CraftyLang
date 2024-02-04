@@ -1,6 +1,5 @@
 package me.geowhat.craftylang.interpreter;
 
-import me.geowhat.craftylang.CraftyLang;
 import me.geowhat.craftylang.client.CraftyLangClient;
 import me.geowhat.craftylang.client.CraftyLangSettings;
 import me.geowhat.craftylang.client.util.Message;
@@ -269,11 +268,9 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             }
         }
 
-        if (!(callee instanceof CraftScriptCallable)) {
+        if (!(callee instanceof CraftScriptCallable function)) {
             throw new RuntimeError(expr.paren, "Can only call functions and classes");
         }
-
-        CraftScriptCallable function = (CraftScriptCallable) callee;
 
         if (arguments.size() != function.arity()) {
             throw new RuntimeError(expr.paren, "Expected " + function.arity() + " parameters but got " + arguments.size());
@@ -392,7 +389,6 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         }
 
         long delay = Long.parseLong(stringify(evaluate(statement.delay)));
-        int counter = 0;
 
         Scheduler.repeat(() -> execute(statement.body), delay * 50L, CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS);
         return null;

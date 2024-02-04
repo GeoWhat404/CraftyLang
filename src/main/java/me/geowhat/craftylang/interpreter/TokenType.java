@@ -13,7 +13,6 @@ public enum TokenType {
 
     AND, UNIT, ELSE, FALSE, FUNCTION, FOR, IF, NULL, OR,
     SAY, RETURN, SUPER, THIS, TRUE, LET, WHILE, REPEAT,
-    USE,
 
     END
 }

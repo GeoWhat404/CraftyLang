@@ -1,11 +1,7 @@
 package me.geowhat.craftylang.interpreter;
 
-import me.geowhat.craftylang.client.util.Message;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Lexer {
 
