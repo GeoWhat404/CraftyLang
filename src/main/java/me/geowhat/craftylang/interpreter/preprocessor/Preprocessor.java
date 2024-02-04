@@ -2,12 +2,12 @@ package me.geowhat.craftylang.interpreter.preprocessor;
 
 import me.geowhat.craftylang.interpreter.error.ModuleError;
 
-public class Resolver {
+public class Preprocessor {
     
     private final String src;
     private final StringBuilder builder;
     
-    public Resolver(String src) {
+    public Preprocessor(String src) {
         this.src = src;
         this.builder = new StringBuilder();
 

@@ -1,6 +1,7 @@
 package me.geowhat.craftylang.interpreter;
 
 import me.geowhat.craftylang.client.util.Message;
+import me.geowhat.craftylang.interpreter.ast.Expression;
 import me.geowhat.craftylang.interpreter.error.RuntimeError;
 
 import java.util.HashMap;
@@ -65,5 +66,22 @@ public class Environment {
         }
 
         throw new RuntimeError(token, "Undefined variable: \"" + token.lexeme() + "\"");
+    }
+
+    public Object getAt(int distance, String name) {
+        return ancestor(distance).values.get(name);
+    }
+
+    public void assignAt(int distance, Token name, Object value) {
+        ancestor(distance).assign(name, value);
+    }
+
+    public Environment ancestor(int distance) {
+        Environment environment = this;
+        for (int i = 0; i < distance; i++) {
+            environment = environment.enclosing;
+        }
+
+        return environment;
     }
 }

@@ -1,28 +1,19 @@
 package me.geowhat.craftylang.mixin;
 
-import me.geowhat.craftylang.client.util.Message;
 import me.geowhat.craftylang.interpreter.*;
-import me.geowhat.craftylang.interpreter.preprocessor.Resolver;
-import net.minecraft.client.Minecraft;
+import me.geowhat.craftylang.interpreter.preprocessor.Preprocessor;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.BookEditScreen;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.WritableBookItem;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(BookEditScreen.class)
@@ -135,10 +126,10 @@ public abstract class BookEditScreenMixin extends Screen {
 
             // TODO: fix this because this is a bit too much for a mixin :D
             StringBuilder builder = new StringBuilder();
-            Resolver resolver = null;
+            Preprocessor resolver = null;
 
             for (int i = 0; i < pages.size(); i++) {
-                builder.append(new Resolver(pages.get(i)));
+                builder.append(new Preprocessor(pages.get(i)));
                 builder.append(pages.get(i).replaceAll("![A-Za-z]+ [A-Za-z0-9]+", ""));
 
                 if (i < pages.size() - 1) {

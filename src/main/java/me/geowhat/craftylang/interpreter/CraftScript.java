@@ -125,8 +125,16 @@ public class CraftScript {
             interpreter.exitInterpreter(PARSE_ERROR_CODE);
             return;
         }
-
         running = true;
+
+        new Resolver(interpreter).resolve(statements);
+
+        if (hadError) {
+            Message.sendError("Error while resolving");
+            interpreter.exitInterpreter(PARSE_ERROR_CODE);
+            return;
+        }
+
         interpreter.interpret(statements);
 
         if (hadRuntimeError) {

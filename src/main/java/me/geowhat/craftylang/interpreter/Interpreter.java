@@ -13,14 +13,13 @@ import me.geowhat.craftylang.mixin.MinecraftAccessor;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
 
     public final Environment globals = new Environment();
     private Environment environment = globals;
+    private final Map<Expression, Integer> locals = new HashMap<>();
 
     private boolean shouldStopExecution = false;
 
@@ -177,6 +176,10 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     }
 
+    public void resolve(Expression expr, int depth) {
+        locals.put(expr, depth);
+    }
+
     // ==================================
     // EXPRESSIONS
     // ==================================
@@ -184,6 +187,14 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     @Override
     public Object visitAssignExpression(Expression.AssignExpression expr) {
         Object value = evaluate(expr.value);
+
+        Integer distance = locals.get(expr);
+        if (distance != null) {
+            environment.assignAt(distance, expr.name, value);
+        } else {
+            globals.assign(expr.name, value);
+        }
+
         environment.assign(expr.name, value);
         return value;
     }
@@ -314,7 +325,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     @Override
     public Object visitVariableExpression(Expression.VariableExpression expr) {
-        return environment.get(expr.name);
+        return lookUpVariable(expr.name, expr);
     }
 
     // ==================================
@@ -409,6 +420,15 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             execute(statement.body);
         }
         return null;
+    }
+
+    private Object lookUpVariable(Token name, Expression expr) {
+        Integer distance = locals.get(expr);
+        if (distance != null) {
+            return environment.getAt(distance, name.lexeme());
+        } else {
+            return globals.get(name);
+        }
     }
 
     private Object evaluate(Expression expr) {
