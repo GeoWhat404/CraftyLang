@@ -30,6 +30,7 @@ public class CraftyLangClient implements ClientModInitializer {
         try {
             config = Configuration.fromJson(configFile);
 
+            CraftyLangSettings.DEBUG_MODE = config.isDebugMode();
             CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS = config.getMaxWhileLoopIteration();
             CraftyLangSettings.MAX_FUNCTION_ARGS = config.getMaxFunctionArgs();
 
@@ -41,6 +42,7 @@ public class CraftyLangClient implements ClientModInitializer {
         ClientLifecycleEvents.CLIENT_STOPPING.register(event -> {
             CraftScript.executorService.shutdown();
 
+            config.setDebugMode(CraftyLangSettings.DEBUG_MODE);
             config.setMaxWhileLoopIteration(CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS);
             config.setMaxFunctionArgs(CraftyLangSettings.MAX_FUNCTION_ARGS);
             config.saveJsonFile(configFile);

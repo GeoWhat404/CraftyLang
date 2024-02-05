@@ -5,6 +5,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
@@ -16,14 +17,16 @@ public class CraftyConfigurationScreen extends Screen {
 
     private static final String title = "CraftyLang Configuration Menu";
 
-    private final int maxWhileLimit = 2048;
+    private final int maxWhileLimit = 8192;
     private final int maxFunctionArgs = 2048;
 
     private AbstractSliderButton whileLoopLimitSlider;
     private AbstractSliderButton functionArgsLimitSlider;
+    private Button debugModeToggleButton;
 
     private final int baseWidth = 200;
     private final int baseHeight = 20;
+    private final int basePadding = 4;
 
     public CraftyConfigurationScreen() {
         super(Component.literal(title));
@@ -40,7 +43,15 @@ public class CraftyConfigurationScreen extends Screen {
 
     @Override
     protected void init() {
-        whileLoopLimitSlider = new AbstractSliderButton(width / 2 - baseWidth / 2, this.height / 4, baseWidth, baseHeight, CommonComponents.EMPTY, (double) CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS / maxWhileLimit) {
+        debugModeToggleButton = Button.builder(Component.literal("Debug mode: " + CraftyLangSettings.DEBUG_MODE), button -> {
+                    CraftyLangSettings.DEBUG_MODE = !CraftyLangSettings.DEBUG_MODE;
+                    debugModeToggleButton.setMessage(Component.literal("Debug mode: " + CraftyLangSettings.DEBUG_MODE));
+                })
+                .bounds(width / 2 - baseWidth / 2, height / 4, baseWidth, baseHeight)
+                .tooltip(Tooltip.create(Component.literal("Enable debug messages")))
+                .build();
+
+        whileLoopLimitSlider = new AbstractSliderButton(width / 2 - baseWidth / 2, height / 4 + baseHeight + basePadding, baseWidth, baseHeight, CommonComponents.EMPTY, (double) CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS / maxWhileLimit) {
 
             @Override
             protected void updateMessage() {
@@ -54,7 +65,7 @@ public class CraftyConfigurationScreen extends Screen {
         };
         whileLoopLimitSlider.setTooltip(Tooltip.create(Component.literal("Adjust the maximum loop iteration (made to not crash your game)")));
 
-        functionArgsLimitSlider = new AbstractSliderButton(width / 2 - baseWidth / 2, this.height / 4 + baseHeight + 4, baseWidth, baseHeight, CommonComponents.EMPTY, (double) CraftyLangSettings.MAX_FUNCTION_ARGS / maxFunctionArgs) {
+        functionArgsLimitSlider = new AbstractSliderButton(width / 2 - baseWidth / 2, height / 4 + 2 * (baseHeight + basePadding), baseWidth, baseHeight, CommonComponents.EMPTY, (double) CraftyLangSettings.MAX_FUNCTION_ARGS / maxFunctionArgs) {
 
             @Override
             protected void updateMessage() {
@@ -72,6 +83,7 @@ public class CraftyConfigurationScreen extends Screen {
         whileLoopLimitSlider.onClick(calculateValue(whileLoopLimitSlider, (double) CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS / maxWhileLimit), 0);
         functionArgsLimitSlider.onClick(calculateValue(whileLoopLimitSlider, (double) CraftyLangSettings.MAX_FUNCTION_ARGS / maxFunctionArgs), 0);
 
+        addRenderableWidget(debugModeToggleButton);
         addRenderableWidget(whileLoopLimitSlider);
         addRenderableWidget(functionArgsLimitSlider);
     }

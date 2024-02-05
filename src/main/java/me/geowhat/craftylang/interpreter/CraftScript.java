@@ -106,6 +106,8 @@ public class CraftScript {
     }
 
     public static void run(String src) {
+        Message.sendDebug("Running new script");
+
         Scheduler.startExecution();
 
         hadError = false;

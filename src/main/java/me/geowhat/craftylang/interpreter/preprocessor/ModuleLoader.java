@@ -1,5 +1,6 @@
 package me.geowhat.craftylang.interpreter.preprocessor;
 
+import me.geowhat.craftylang.client.util.Message;
 import me.geowhat.craftylang.interpreter.CraftScript;
 import me.geowhat.craftylang.interpreter.Modules;
 import me.geowhat.craftylang.interpreter.error.ModuleError;
@@ -52,8 +53,10 @@ public class ModuleLoader {
         if (Modules.get(moduleName) != null)
             return;
 
-        if (foundModule)
+        if (foundModule) {
             Modules.add(moduleName, builder.toString());
+            Message.sendDebug("Found module with name: " + builder);
+        }
         else
             throw moduleError(moduleName, "Error resolving module " + moduleName);
     }

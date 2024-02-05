@@ -1,5 +1,6 @@
 package me.geowhat.craftylang.interpreter;
 
+import me.geowhat.craftylang.client.util.Message;
 import me.geowhat.craftylang.interpreter.error.RuntimeError;
 
 import java.util.HashMap;
@@ -39,6 +40,7 @@ public class Environment {
     }
 
     public void define(String name, Object value) {
+        Message.sendDebug("Defined " + name + " with a value of " + value);
         values.put(name, value);
     }
 
@@ -53,6 +55,8 @@ public class Environment {
     }
 
     public void assign(Token token, Object value) {
+        Message.sendDebug("Assigned " + token.lexeme() + " to new value of " + value);
+
         if (isDefined(token)) {
             values.put(token.lexeme(), value);
             return;

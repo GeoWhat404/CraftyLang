@@ -1,5 +1,6 @@
 package me.geowhat.craftylang.interpreter;
 
+import me.geowhat.craftylang.client.util.Message;
 import me.geowhat.craftylang.interpreter.error.LexerError;
 
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ public class Lexer {
     }
 
     public List<Token> lex() {
+        Message.sendDebug("Lexer has started analyzing");
         while (!isAtEnd()) {
             start = current;
             lexToken();

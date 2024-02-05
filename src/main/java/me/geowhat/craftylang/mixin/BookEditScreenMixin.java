@@ -4,7 +4,6 @@ import me.geowhat.craftylang.interpreter.*;
 import me.geowhat.craftylang.interpreter.preprocessor.Preprocessor;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.BookEditScreen;
 import net.minecraft.network.chat.Component;
@@ -48,14 +47,6 @@ public abstract class BookEditScreenMixin extends Screen {
     @Shadow protected abstract void updateButtonVisibility();
 
     @Shadow protected abstract void clearDisplayCache();
-
-    @Shadow protected abstract void setCurrentPageText(String string);
-
-    @Shadow protected abstract String getCurrentPageText();
-
-    @Shadow @Final private TextFieldHelper titleEdit;
-
-    @Shadow @Final private TextFieldHelper pageEdit;
 
     @Shadow public abstract boolean keyPressed(int i, int j, int k);
 
@@ -133,9 +124,7 @@ public abstract class BookEditScreenMixin extends Screen {
                 builder.append(pages.get(i).replaceAll("![A-Za-z]+ [A-Za-z0-9]+", ""));
 
                 if (i < pages.size() - 1) {
-                    for (int j = 0; j < 14 - pages.get(i).split("\n").length + 1; j++) {
-                        builder.append("\n");
-                    }
+                    builder.append("\n".repeat(Math.max(0, 14 - pages.get(i).split("\n").length + 1)));
                 }
             }
             CraftScript.run(builder.toString());
