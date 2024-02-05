@@ -1,5 +1,7 @@
 package me.geowhat.craftylang.interpreter;
 
+import me.geowhat.craftylang.interpreter.error.LexerError;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,7 +92,7 @@ public class Lexer {
                 } else if (isAlpha(ch)) {
                     handleIdentifier();
                 } else {
-                    CraftScript.error(page, line, "Unexpected character: " + ch + (moduleCode ? " in module" : ""));
+                    throw lexerError(page, line, "Unexpected character: " + ch + (moduleCode ? " in module" : ""));
                 }
 
                 break;
@@ -146,8 +148,7 @@ public class Lexer {
         }
 
         if (isAtEnd()) {
-            CraftScript.error(page, line, "Unterminated String" + (moduleCode ? " in module" : ""));
-            return;
+            throw lexerError(page, line, "Unterminated String" + (moduleCode ? " in module" : ""));
         }
 
         // handle the closing "
@@ -202,5 +203,10 @@ public class Lexer {
     private char peek(int offset) {
         if (current + offset > src.length()) return '\0';
         return src.charAt(current + offset);
+    }
+
+    private LexerError lexerError(int page, int line, String message) {
+        CraftScript.error(page, line, message);
+        return new LexerError(page, line, message);
     }
 }

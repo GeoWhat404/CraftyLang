@@ -8,7 +8,6 @@ public class Keywords {
     public static final Map<String, TokenType> keywords = new HashMap<>();
 
     public static void addKeywords() {
-        keywords.put("unit", TokenType.UNIT);
         keywords.put("else", TokenType.ELSE);
         keywords.put("F", TokenType.FALSE);
         keywords.put("fn", TokenType.FUNCTION);
@@ -17,8 +16,6 @@ public class Keywords {
         keywords.put("null", TokenType.NULL);
         keywords.put("say", TokenType.SAY);
         keywords.put("ret", TokenType.RETURN);
-        keywords.put("sup", TokenType.SUPER);
-        keywords.put("this", TokenType.THIS);
         keywords.put("T", TokenType.TRUE);
         keywords.put("let", TokenType.LET);
         keywords.put("while", TokenType.WHILE);
