@@ -2,22 +2,37 @@ package me.geowhat.craftylang.mixin;
 
 import me.geowhat.craftylang.interpreter.*;
 import me.geowhat.craftylang.interpreter.preprocessor.Preprocessor;
+import me.geowhat.craftylang.interpreter.syntax.SyntaxColors;
+import me.geowhat.craftylang.interpreter.syntax.SyntaxHighlighter;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.BookEditScreen;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 @Mixin(BookEditScreen.class)
 public abstract class BookEditScreenMixin extends Screen {
+
+    private static final SyntaxHighlighter SYNTAX_HIGHLIGHTER = new SyntaxHighlighter(
+            new SyntaxColors(0x797978, 0x0099e6),
+            Keywords.keywords.keySet()
+    );
 
     @Unique private Button interpretButton;
     @Unique private Button saveChangesButton;
@@ -60,6 +75,9 @@ public abstract class BookEditScreenMixin extends Screen {
     @Shadow public abstract boolean keyPressed(int i, int j, int k);
 
     @Shadow private int lastIndex;
+
+
+    @Shadow protected abstract BookEditScreen.DisplayCache getDisplayCache();
 
     @Unique
     private void updatePageMessage() {
@@ -152,5 +170,28 @@ public abstract class BookEditScreenMixin extends Screen {
 
         this.addRenderableWidget(interpretButton);
         this.addRenderableWidget(saveChangesButton);
+    }
+
+    @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I", ordinal = 3), index = 1)
+    public Component modifyComponentArg(Component component) {
+        MutableComponent newComponent = Component.empty();
+        String[] words = component.getString().split(" ");
+
+        Iterator<String> iterator = Arrays.stream(words).iterator();
+
+        while (iterator.hasNext()) {
+            String word = iterator.next();
+
+            int textColor = SYNTAX_HIGHLIGHTER.getTextColor(word);
+            Component wordComponent = Component.literal(word).withColor(textColor);
+
+            newComponent.append(wordComponent);
+
+            if (iterator.hasNext()) {
+                newComponent.append(CommonComponents.space());
+            }
+        }
+
+        return newComponent;
     }
 }
