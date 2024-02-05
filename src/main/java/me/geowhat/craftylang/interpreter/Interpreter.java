@@ -41,6 +41,8 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     private void registerGlobals() {
+        Message.sendDebug("Loading predefined globals");
+
         globals.define("VERSION", CraftyLangClient.VERSION);
 
         assert Minecraft.getInstance().player != null;
@@ -159,6 +161,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     public void interpret(List<Statement> statements) {
+        Message.sendDebug("Interpreter is interpreting");
         environment = globals;
 
         try {
@@ -167,12 +170,10 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
                     return;
 
                 execute(statement);
-
             }
         } catch (RuntimeError err) {
             CraftScript.runtimeError(err);
         }
-
     }
 
     public void resolve(Expression expr, int depth) {

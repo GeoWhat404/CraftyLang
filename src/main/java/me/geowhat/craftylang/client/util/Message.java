@@ -1,5 +1,6 @@
 package me.geowhat.craftylang.client.util;
 
+import me.geowhat.craftylang.client.CraftyLangSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 
@@ -24,14 +25,13 @@ public class Message {
         send(Component.literal(craftyHeader.replace("§x", "§c") + "§c" + message));
     }
 
-
     public static void sendSuccess(String message) {
         send(Component.literal(craftyHeader.replace("§x", "§a") + "§a" + message));
     }
 
-
     public static void sendDebug(String message) {
-        send(Component.literal(craftyHeader.replace("§x", "§e") + "§e" + message));
+        if (CraftyLangSettings.DEBUG_MODE)
+            send(Component.literal(craftyHeader.replace("§x", "§e") + "§e" + message));
     }
 
     public static void sendGlobal(String message) {

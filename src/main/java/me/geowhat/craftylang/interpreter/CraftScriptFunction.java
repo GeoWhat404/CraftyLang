@@ -1,5 +1,6 @@
 package me.geowhat.craftylang.interpreter;
 
+import me.geowhat.craftylang.client.util.Message;
 import me.geowhat.craftylang.interpreter.ast.Statement;
 import me.geowhat.craftylang.interpreter.error.Return;
 

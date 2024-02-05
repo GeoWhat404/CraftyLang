@@ -7,8 +7,8 @@ import java.io.*;
 
 public class Configuration {
 
+    private boolean debugMode;
     private int maxWhileLoopIteration;
-
     private int maxFunctionArgs;
 
     private static boolean configExists(String filepath) {
@@ -40,6 +40,14 @@ public class Configuration {
         } catch (IOException e) {
             CraftyLangClient.logger.error(e);
         }
+    }
+
+    public boolean isDebugMode() {
+        return debugMode;
+    }
+
+    public void setDebugMode(boolean debugMode) {
+        this.debugMode = debugMode;
     }
 
     public void setMaxWhileLoopIteration(int limit) {

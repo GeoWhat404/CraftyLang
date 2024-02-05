@@ -1,6 +1,7 @@
 package me.geowhat.craftylang.interpreter.ast;
 
 import me.geowhat.craftylang.client.CraftyLangSettings;
+import me.geowhat.craftylang.client.util.Message;
 import me.geowhat.craftylang.interpreter.CraftScript;
 import me.geowhat.craftylang.interpreter.Token;
 import me.geowhat.craftylang.interpreter.TokenType;
@@ -19,6 +20,7 @@ public class Parser {
     }
 
     public List<Statement> parse() {
+        Message.sendDebug("Parser started parsing");
         List<Statement> statements = new ArrayList<>();
         while (!isAtEnd()) {
             statements.add(declaration());
@@ -412,6 +414,8 @@ public class Parser {
     }
 
     private void synchronize() {
+        Message.sendDebug("Error encountered, synchronizing...");
+
         advance();
 
         while (!isAtEnd()) {
