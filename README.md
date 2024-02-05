@@ -5,9 +5,10 @@ CraftyLang is a small programming language embedded within Minecraft! It require
 Heavily inspired by [Crafting Interpreters](http://craftinginterpreters.com/).
 
 ## Features
+- Basic syntax highlighting
 - Minimal error handling/messages
 - Basic types: string, number, boolean, null
-- Basic operators: +, -, /, *
+- Basic operators: +, -, /, *, %
 - Variable declaration
 - For/While loops
 - Say statement (similar to printing)
@@ -15,6 +16,8 @@ Heavily inspired by [Crafting Interpreters](http://craftinginterpreters.com/).
 - Control flow (if/else)
 - Unary operations (!/-)
 - Logical operators
+- Functions
+- Basic module system
 
 ## Usage
 Every expression must end with a semicolon `;`.
@@ -114,3 +117,56 @@ However
 }
 say a;              # will produce an error because `a` is declared in another scope
 ```
+
+### Functions
+You can declare functions using the `fn` keyword, followed by the name of the function and the argument list.
+```
+fn function(a, b) {
+  ret a + b;
+}
+```
+The `ret` keyword specifies the return value of the function
+
+### Modules
+Ever wanted to import other pieces of code from another book and quill? Well you can do that now using modules.
+To use a module you simply
+```
+!use <book name>
+```
+Assuming [book name] is a valid book and quill name that is in your inventory, the mod should copy the code from the book
+and place it inside the code you are importing.
+
+There is also a very basic (like very very basic) standard library with the only library being `math`
+Similarly with code you have written you can just import it like this
+
+```
+!use math
+```
+
+The math module has some very basic functions such as `sqrt`, `pow`, `min` and `max`, `abs` (absolute value), 
+`hypot` (the hypotenuse of a right angle triangle with sides a, b) and the beloved `PI` as a constant
+
+All module functions/constants are declared globally so you can access them globally, from anywhere
+```
+!use math
+
+sqrt(2);
+
+# and also in here
+fn function() {
+  sqrt(3);
+}
+```
+
+### Basic built-in global definitions
+ - Current version: `VERSION` just returns the current version of CraftScript
+ - Coordinates: `xc`, `yc` and `zc` are all globally defined variables that as you might have guessed contain the 
+player's x, y, z coordinates.
+ - Send Chat message: Unlike `say`, `glob(<'message'>)` sends a message as the player
+ - Closing the book edit screen: `close()` does just that. It won't exit the program, just close the screen
+ - Clearing the chat: This is what `clear()` does
+ - Exiting: `exit(<code>)` will exit the program with the specified exit code (non-zero exit codes print an error)
+ - String conversion: `str(<value>)` will hopefully convert the value into a CraftScript string that can be concatenated 
+with the `+` operator
+ - Attacking (buggy): `attack()` will... attack as the player
+
