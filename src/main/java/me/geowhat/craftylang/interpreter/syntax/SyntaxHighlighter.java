@@ -2,20 +2,19 @@ package me.geowhat.craftylang.interpreter.syntax;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Optional;
 
 public final class SyntaxHighlighter {
 
-    private final SyntaxColors syntaxColors;
+    private final SyntaxColorPalette syntaxColorPalette;
     private final Collection<String> keywords;
 
-    public SyntaxHighlighter(SyntaxColors syntaxColors, Collection<String> keywords) {
-        this.syntaxColors = syntaxColors;
+    public SyntaxHighlighter(SyntaxColorPalette syntaxColorPalette, Collection<String> keywords) {
+        this.syntaxColorPalette = syntaxColorPalette;
         this.keywords = Collections.unmodifiableCollection(keywords);
     }
 
-    public SyntaxColors getSyntaxColors() {
-        return syntaxColors;
+    public SyntaxColorPalette getSyntaxColors() {
+        return syntaxColorPalette;
     }
 
     public Collection<String> getKeywords() {
@@ -24,8 +23,8 @@ public final class SyntaxHighlighter {
 
     public int getTextColor(String text) {
         if (!keywords.contains(text))
-            return syntaxColors.defaultColor();
+            return syntaxColorPalette.defaultColor();
 
-        return syntaxColors.keywordColor();
+        return syntaxColorPalette.keywordColor();
     }
 }
