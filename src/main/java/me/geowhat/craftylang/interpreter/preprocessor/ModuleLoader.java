@@ -1,5 +1,6 @@
 package me.geowhat.craftylang.interpreter.preprocessor;
 
+import me.geowhat.craftylang.client.CraftyLangClient;
 import me.geowhat.craftylang.client.util.Message;
 import me.geowhat.craftylang.interpreter.CraftScript;
 import me.geowhat.craftylang.interpreter.Modules;
@@ -10,7 +11,17 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.WritableBookItem;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 
 public class ModuleLoader {
 
@@ -34,7 +45,7 @@ public class ModuleLoader {
                 continue;
             }
 
-            if (!item.getDisplayName().getString().replace("[", "").replace("]", "").equals(moduleName)) {
+            if (!item.getHoverName().getString().equals(moduleName)) {
                 continue;
             }
 
@@ -50,13 +61,37 @@ public class ModuleLoader {
             }
         }
 
-        if (Modules.get(moduleName) != null)
+        if (!foundModule) {
+            File dir = new File(CraftyLangClient.SOURCE_FILES);
+            for (File file : Objects.requireNonNull(dir.listFiles())) {
+                if (file.getName().endsWith(".crs") && file.getName().replace(".crs", "").equals(moduleName)) {
+                    try (FileReader reader = new FileReader(file);
+                         BufferedReader bufferedReader = new BufferedReader(reader)) {
+                        String line;
+                        while ((line = bufferedReader.readLine()) != null) {
+                            builder.append(line).append(System.lineSeparator());
+                        }
+                        foundModule = true;
+                    } catch (IOException ignored) {
+
+                    }
+                }
+            }
+        }
+
+        if (Modules.get(moduleName) != null) {
             return;
+        }
+
+        StringBuilder tmp = builder;
+        builder = new StringBuilder();
 
         if (foundModule) {
+            builder.append(new Preprocessor(tmp.toString()));
             Modules.add(moduleName, builder.toString());
-            Message.sendDebug("Found module with name: " + builder);
+            Message.sendDebug("Found module with name: " + moduleName);
         }
+
         else
             throw moduleError(moduleName, "Error resolving module " + moduleName);
     }

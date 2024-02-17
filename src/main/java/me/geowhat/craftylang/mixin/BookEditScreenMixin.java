@@ -1,5 +1,9 @@
 package me.geowhat.craftylang.mixin;
 
+import me.geowhat.craftylang.CraftyLang;
+import me.geowhat.craftylang.client.CraftyLangClient;
+import me.geowhat.craftylang.client.util.Exporter;
+import me.geowhat.craftylang.client.util.Message;
 import me.geowhat.craftylang.interpreter.*;
 import me.geowhat.craftylang.interpreter.preprocessor.Preprocessor;
 import me.geowhat.craftylang.interpreter.syntax.SyntaxColorPalette;
@@ -11,6 +15,7 @@ import net.minecraft.client.gui.screens.inventory.BookEditScreen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,6 +23,8 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -25,6 +32,7 @@ import java.util.List;
 @Mixin(BookEditScreen.class)
 public abstract class BookEditScreenMixin extends Screen {
 
+    @Unique
     private static final SyntaxHighlighter SYNTAX_HIGHLIGHTER = new SyntaxHighlighter(
             new SyntaxColorPalette(0x797978, 0x0099e6),
             Keywords.keywords.keySet()
@@ -32,6 +40,7 @@ public abstract class BookEditScreenMixin extends Screen {
 
     @Unique private Button interpretButton;
     @Unique private Button saveChangesButton;
+    @Unique private Button exportButton;
 
     @Unique private final int baseButtonWidth = 98;
     @Unique private final int baseButtonHeight = 20;
@@ -66,6 +75,8 @@ public abstract class BookEditScreenMixin extends Screen {
 
 
     @Shadow protected abstract BookEditScreen.DisplayCache getDisplayCache();
+
+    @Shadow @Final private ItemStack book;
 
     @Unique
     private void updatePageMessage() {
@@ -132,7 +143,6 @@ public abstract class BookEditScreenMixin extends Screen {
 
             // TODO: fix this because this is a bit too much for a mixin :D
             StringBuilder builder = new StringBuilder();
-            Preprocessor resolver = null;
 
             for (int i = 0; i < pages.size(); i++) {
                 builder.append(new Preprocessor(pages.get(i)));
@@ -154,8 +164,13 @@ public abstract class BookEditScreenMixin extends Screen {
            this.saveChanges(false);
         }).bounds(this.width / 2 + 2, 196 + baseButtonHeight + 5, baseButtonWidth, baseButtonHeight).build();
 
+        exportButton = Button.builder(Component.literal("Export code"), button -> {
+            Exporter.export(book.getHoverName().getString(), pages);
+        }).bounds(this.width / 2 - 100, 196 + 2 * (baseButtonHeight + 5), baseButtonWidth, baseButtonHeight).build();
+
         this.addRenderableWidget(interpretButton);
         this.addRenderableWidget(saveChangesButton);
+        this.addRenderableWidget(exportButton);
     }
 
     @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I", ordinal = 3), index = 1)

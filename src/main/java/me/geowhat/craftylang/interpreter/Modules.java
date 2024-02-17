@@ -11,6 +11,10 @@ public class Modules {
         modules.putIfAbsent(name, code);
     }
 
+    public static void replace(String name, String code) {
+        modules.replace(name, code);
+    }
+
     public static String get(String module) {
         return modules.get(module);
     }
