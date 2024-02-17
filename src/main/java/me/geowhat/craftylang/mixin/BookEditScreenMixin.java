@@ -66,11 +66,6 @@ public abstract class BookEditScreenMixin extends Screen {
 
     @Shadow public abstract boolean keyPressed(int i, int j, int k);
 
-    @Shadow private int lastIndex;
-
-
-    @Shadow protected abstract BookEditScreen.DisplayCache getDisplayCache();
-
     @Shadow @Final private ItemStack book;
 
     @Unique

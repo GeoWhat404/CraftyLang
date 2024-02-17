@@ -4,6 +4,7 @@ public class CRSMath {
     public static final String code =
             """
                     let PI = 3.14159265358979;
+                    let E = 2.71828182845904;
 
                     fn min(a, b) {
                       if (a > b) {
@@ -69,6 +70,41 @@ public class CRSMath {
                         }
                         ret r;
                       }
+                    }
+                    
+                    fn fact(n) {
+                      if (n == 0) {
+                          ret 1;
+                      }
+                      ret n * fact(n - 1);
+                    }
+                    
+                    fn rad(x) {
+                      ret x * PI / 180;
+                    }
+                    
+                    fn sin(x) {
+                      let n = rad(x);
+                      let r = 0;
+                      
+                      for (let i = 0; i < 100; i = i + 1) {
+                          r = r + pow(-1, i) * pow(n, 2 * i + 1) / fact(2 * i + 1);
+                      }
+                      ret r;
+                    }
+                    
+                    fn cos(x) {
+                      let n = rad(x);
+                      let r = 0;
+                      
+                      for (let i = 0; i < 100; i = i + 1) {
+                        r = r + pow(-1, i) * pow(n, 2 * i) / fact(2 * i);
+                      }
+                      ret r;
+                    }
+                    
+                    fn tan(x) {
+                      ret sin(x) / cos(x);
                     }
 
                     fn hypot(a, b) {

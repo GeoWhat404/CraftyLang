@@ -36,30 +36,7 @@ public class CraftScript {
         timer = new Timer();
         timer.start();
 
-        // TODO: make this better pls (2)
-//        String mobCode =
-//                """
-//                        fn dragon() {
-//                            while (T) {
-//                                exec('summon ender_dragon ~ ~ ~');
-//                            }
-//                        }
-//
-//                        fn summon(mob, bl) {
-//                            if (bl) { close(); }
-//                            exec('summon ' + str(mob) + ' ~ ~ ~');
-//                        }
-//
-//                        fn kill() {
-//                            exec('kill @e');
-//                        }
-//
-//                        fn killMobs() {
-//                            exec('kill @e[type=!player]');
-//                        }""";
-
         Modules.define("math", CRSMath.code);
-        //Modules.modules.put("mob", mobCode);
     }
 
     public static void run(String src) {

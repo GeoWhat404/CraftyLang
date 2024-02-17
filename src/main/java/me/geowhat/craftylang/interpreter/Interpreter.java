@@ -125,9 +125,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
                     }
                 });
 
-                CraftScript.timer.setOnCompletionListener(() -> {
-                    Message.sendDebug("2");
-                });
+                CraftScript.timer.setOnCompletionListener(() -> Message.sendDebug("2"));
 
                 return null;
             }

@@ -30,8 +30,6 @@ public class Preprocessor {
                 }
             }
         }
-
-        builder.append(src.replaceAll("![A-Za-z]+ [A-Za-z0-9]+", ""));
     }
 
     private void resolveModule(int wordIdx) {
