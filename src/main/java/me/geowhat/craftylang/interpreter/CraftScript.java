@@ -1,6 +1,5 @@
 package me.geowhat.craftylang.interpreter;
 
-import me.geowhat.craftylang.client.CraftyLangClient;
 import me.geowhat.craftylang.client.util.Message;
 import me.geowhat.craftylang.client.util.Scheduler;
 import me.geowhat.craftylang.client.util.Timer;
@@ -9,7 +8,6 @@ import me.geowhat.craftylang.interpreter.ast.Parser;
 import me.geowhat.craftylang.interpreter.ast.Statement;
 import me.geowhat.craftylang.interpreter.error.ModuleError;
 import me.geowhat.craftylang.interpreter.error.RuntimeError;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -59,7 +57,7 @@ public class CraftScript {
 //                            exec('kill @e[type=!player]');
 //                        }""";
 
-        Modules.add("math", CRSMath.code);
+        Modules.define("math", CRSMath.code);
         //Modules.modules.put("mob", mobCode);
     }
 

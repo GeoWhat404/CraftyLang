@@ -21,7 +21,6 @@ public class CraftyLangClient implements ClientModInitializer {
     public static final String MODID = "craftylang";
     public static final String CRAFTY_PATH = "./config/crafty/";
     public static final String SOURCE_FILES = CRAFTY_PATH + "source/";
-    public static final String MATH_LIBRARY_PATH = "src/main/java/me/geowhat/craftylang/crs/";
 
     public static Logger logger = LogManager.getLogger(MODID);
 

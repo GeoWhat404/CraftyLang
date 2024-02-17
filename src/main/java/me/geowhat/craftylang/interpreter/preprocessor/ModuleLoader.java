@@ -15,11 +15,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 
@@ -88,7 +83,7 @@ public class ModuleLoader {
 
         if (foundModule) {
             builder.append(new Preprocessor(tmp.toString()));
-            Modules.add(moduleName, builder.toString());
+            Modules.define(moduleName, builder.toString());
             Message.sendDebug("Found module with name: " + moduleName);
         }
 
