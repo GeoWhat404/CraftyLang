@@ -16,9 +16,10 @@ import java.util.concurrent.ScheduledExecutorService;
 public class CraftScript {
 
     public static final int SUCCESS_CODE = 0;
-    public static final int PARSE_ERROR_CODE = 1;
-    public static final int RUNTIME_ERROR_CODE = 2;
-    public static final int USER_REQUEST_CODE = 3;
+    public static final int INTERPRET_ERROR_CODE = 1;
+    public static final int PARSE_ERROR_CODE = 2;
+    public static final int RUNTIME_ERROR_CODE = 3;
+    public static final int USER_REQUEST_CODE = 4;
 
     public static boolean running = false;
 
@@ -69,17 +70,26 @@ public class CraftScript {
         hadError = false;
         hadRuntimeError = false;
 
+        interpreter = new Interpreter();
+
         Lexer lexer = new Lexer(src);
         List<Token> tokens = lexer.lex();
+
+        if (hadError) {
+            Message.sendError("Error while lexing");
+            interpreter.exitInterpreter(INTERPRET_ERROR_CODE);
+            return;
+        }
+
         Parser parser = new Parser(tokens);
         List<Statement> statements = parser.parse();
-        interpreter = new Interpreter();
 
         if (hadError) {
             Message.sendError("Error while parsing");
             interpreter.exitInterpreter(PARSE_ERROR_CODE);
             return;
         }
+
         running = true;
 
         new Resolver(interpreter).resolve(statements);

@@ -34,7 +34,7 @@ For example:
   ```
   let a = 'a';
   let b = 'b';
-  let c = a + b; # that works
+  let c = a + b; # c = ab
   ```
 
 - Number: `let num = 10;`
@@ -65,7 +65,7 @@ say a;          # 20
 ### For Loops
 For loops follow a C-like syntax. You can initialize the loop variable, specify the condition, and define the increment all in one line:
 ```
-for (let var = <begin value>; var < <end value>; var = var + 1) {
+for (let var = <begin value>; var < <end value>; var = var + <increment>) {
     ...
 }
 ```

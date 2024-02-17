@@ -1,9 +1,6 @@
 package me.geowhat.craftylang.mixin;
 
-import me.geowhat.craftylang.CraftyLang;
-import me.geowhat.craftylang.client.CraftyLangClient;
 import me.geowhat.craftylang.client.util.Exporter;
-import me.geowhat.craftylang.client.util.Message;
 import me.geowhat.craftylang.interpreter.*;
 import me.geowhat.craftylang.interpreter.preprocessor.Preprocessor;
 import me.geowhat.craftylang.interpreter.syntax.SyntaxColorPalette;
@@ -23,8 +20,6 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;

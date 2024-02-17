@@ -1,7 +1,6 @@
 package me.geowhat.craftylang.interpreter;
 
 import me.geowhat.craftylang.client.util.Message;
-import me.geowhat.craftylang.interpreter.error.LexerError;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +25,11 @@ public class Lexer {
         Message.sendDebug("Lexer has started analyzing");
         while (!isAtEnd()) {
             start = current;
-            lexToken();
+            try {
+                lexToken();
+            } catch (LexerError ignored) {
+                break;
+            }
         }
 
         tokens.add(new Token(TokenType.END, "", null, page, line));
@@ -207,8 +210,10 @@ public class Lexer {
         return src.charAt(current + offset);
     }
 
+    private static class LexerError extends RuntimeException { }
+
     private LexerError lexerError(int page, int line, String message) {
         CraftScript.error(page, line, message);
-        return new LexerError(page, line, message);
+        return new LexerError();
     }
 }
