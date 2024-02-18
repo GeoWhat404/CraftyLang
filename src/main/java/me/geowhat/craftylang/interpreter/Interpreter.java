@@ -412,6 +412,12 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
+    public Void visitBreakStatement(Statement.BreakStatement statement) {
+        
+        return null;
+    }
+
+    @Override
     public Void visitExpressionStatement(Statement.ExpressionStatement statement) {
         evaluate(statement.expr);
         return null;

@@ -11,6 +11,7 @@ public enum TokenType {
 
     IDENTIFIER, STRING, NUMBER,
 
+    BREAK,
     AND, ELSE, FALSE, FUNCTION, FOR, IF, NULL, OR,
     SAY, RETURN, TRUE, LET, WHILE, REPEAT,
 

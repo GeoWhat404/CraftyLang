@@ -60,6 +60,8 @@ public class Parser {
             return whileStatement();
         if (match(TokenType.REPEAT))
             return repeatStatement();
+        if (match(TokenType.BREAK))
+            return breakStatement();
         if (match(TokenType.LEFT_BRACE))
             return new Statement.BlockStatement(block());
 
@@ -127,6 +129,12 @@ public class Parser {
         Statement body = statement();
 
         return new Statement.RepeatStatement(delay, body);
+    }
+
+    private Statement breakStatement() {
+        consume(TokenType.SEMICOLON, "Expected a \";\" after break");
+
+        return new Statement.BreakStatement();
     }
 
     private Statement whileStatement() {

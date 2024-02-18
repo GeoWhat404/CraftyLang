@@ -3,11 +3,9 @@ package me.geowhat.craftylang.interpreter;
 import me.geowhat.craftylang.client.CraftyLangClient;
 import me.geowhat.craftylang.client.util.Message;
 import me.geowhat.craftylang.crs.CRSMath;
-import me.geowhat.craftylang.interpreter.preprocessor.Preprocessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.WritableBookItem;
 
@@ -82,11 +80,6 @@ public class Modules {
                     pages.append(pagesTag.getString(k));
                 }
                 builder.append(pages);
-
-//                StringBuilder tmp = builder;
-//                builder = new StringBuilder();
-
-//                builder.append(new Preprocessor(tmp.toString()));
                 define(item.getHoverName().getString(), builder.toString());
             }
         }

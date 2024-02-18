@@ -7,6 +7,7 @@ import java.util.List;
 public abstract class Statement {
     public interface Visitor<R> {
         R visitBlockStatement(BlockStatement statement);
+        R visitBreakStatement(BreakStatement statement);
         R visitExpressionStatement(ExpressionStatement statement);
         R visitFunctionStatement(FunctionStatement statement);
         R visitIfStatement(IfStatement statement);
@@ -28,6 +29,14 @@ public abstract class Statement {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitBlockStatement(this);
+        }
+    }
+
+    public static class BreakStatement extends Statement {
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitBreakStatement(this);
         }
     }
 
