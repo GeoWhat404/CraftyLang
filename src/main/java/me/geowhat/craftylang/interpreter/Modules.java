@@ -95,7 +95,6 @@ public class Modules {
     }
 
     public static void printDefinitions() {
-        Message.sendNewline();
         Message.sendDebug("MODULE DEFINITIONS: " + modules.size());
         for (Map.Entry<String, String> entry : modules.entrySet()) {
             if (!entry.getKey().equals("math")) {
