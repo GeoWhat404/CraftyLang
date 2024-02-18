@@ -50,10 +50,10 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         globals.define("VERSION", CraftyLangClient.VERSION);
 
         assert Minecraft.getInstance().player != null;
-        globals.define("xc", Math.round(Minecraft.getInstance().player.getX()));
-        globals.define("yc", Math.round(Minecraft.getInstance().player.getY()));
-        globals.define("zc", Math.round(Minecraft.getInstance().player.getZ()));
-        globals.define("time", Math.round(Minecraft.getInstance().player.level().getGameTime()));
+        globals.define("xc", Minecraft.getInstance().player.getX());
+        globals.define("yc", Minecraft.getInstance().player.getY());
+        globals.define("zc", Minecraft.getInstance().player.getZ());
+        globals.define("time", Minecraft.getInstance().player.level().getGameTime());
 
         ClientTickEvents.END_CLIENT_TICK.register(event -> {
             if (Minecraft.getInstance().player != null) {
@@ -94,6 +94,11 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
                 Minecraft.getInstance().player.connection.sendCommand(stringify(args.get(0)));
                 return null;
             }
+
+            @Override
+            public String toString() {
+                return "<builtin fn>";
+            }
         });
 
         globals.define("sleep", new CraftScriptCallable() {
@@ -128,6 +133,11 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
                 CraftScript.timer.setOnCompletionListener(() -> Message.sendDebug("2"));
 
                 return null;
+            }
+
+            @Override
+            public String toString() {
+                return "<builtin fn>";
             }
         });
 

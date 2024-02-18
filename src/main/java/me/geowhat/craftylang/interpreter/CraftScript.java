@@ -1,5 +1,6 @@
 package me.geowhat.craftylang.interpreter;
 
+import me.geowhat.craftylang.client.CraftyLangClient;
 import me.geowhat.craftylang.client.util.Message;
 import me.geowhat.craftylang.client.util.Scheduler;
 import me.geowhat.craftylang.client.util.Timer;
@@ -9,7 +10,9 @@ import me.geowhat.craftylang.interpreter.ast.Statement;
 import me.geowhat.craftylang.interpreter.error.ModuleError;
 import me.geowhat.craftylang.interpreter.error.RuntimeError;
 
+import java.io.*;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -32,16 +35,14 @@ public class CraftScript {
     public static Timer timer;
 
     public static void init() {
-
         timer = new Timer();
         timer.start();
 
-        Modules.define("math", CRSMath.code);
+        Modules.reload();
     }
 
     public static void run(String src) {
         Message.sendDebug("Running new script");
-
         Scheduler.startExecution();
 
         hadError = false;

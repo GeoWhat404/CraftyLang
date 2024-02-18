@@ -36,6 +36,7 @@ public abstract class BookEditScreenMixin extends Screen {
     @Unique private Button interpretButton;
     @Unique private Button saveChangesButton;
     @Unique private Button exportButton;
+    @Unique private Button reloadModuleButton;
 
     @Unique private final int baseButtonWidth = 98;
     @Unique private final int baseButtonHeight = 20;
@@ -158,9 +159,14 @@ public abstract class BookEditScreenMixin extends Screen {
             Exporter.export(book.getHoverName().getString(), pages);
         }).bounds(this.width / 2 - 100, 196 + 2 * (baseButtonHeight + 5), baseButtonWidth, baseButtonHeight).build();
 
+        reloadModuleButton = Button.builder(Component.literal("Reload all modules"), button -> {
+            Modules.reload();
+        }).bounds(this.width / 2 + 2, 196 + 2 * (baseButtonHeight + 5), baseButtonWidth, baseButtonHeight).build();
+
         this.addRenderableWidget(interpretButton);
         this.addRenderableWidget(saveChangesButton);
         this.addRenderableWidget(exportButton);
+        this.addRenderableWidget(reloadModuleButton);
     }
 
     @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I", ordinal = 3), index = 1)
