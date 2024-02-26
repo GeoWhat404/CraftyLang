@@ -40,7 +40,6 @@ public final class SyntaxHighlighter {
         component = replaceMatches(component, keywordsPattern, syntaxColorPalette.keywordColor());
         component = replaceMatches(component, STRING_PATTERN, syntaxColorPalette.stringColor());
 
-        Minecraft.getInstance().player.sendSystemMessage(component);
         return component;
     }
 

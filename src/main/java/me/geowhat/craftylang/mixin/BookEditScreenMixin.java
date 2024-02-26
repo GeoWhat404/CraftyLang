@@ -8,6 +8,7 @@ import me.geowhat.craftylang.interpreter.Modules;
 import me.geowhat.craftylang.interpreter.preprocessor.Preprocessor;
 import me.geowhat.craftylang.interpreter.syntax.SyntaxColorPalette;
 import me.geowhat.craftylang.interpreter.syntax.SyntaxHighlighter;
+import me.geowhat.craftylang.utils.ComponentUtils;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -187,6 +188,8 @@ public abstract class BookEditScreenMixin extends Screen {
 
     @Inject(method = "rebuildDisplayCache", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/StringSplitter;splitLines(Ljava/lang/String;ILnet/minecraft/network/chat/Style;ZLnet/minecraft/client/StringSplitter$LinePosConsumer;)V"), locals = LocalCapture.CAPTURE_FAILHARD)
     public void splitLinesInjection(CallbackInfoReturnable<BookEditScreen.DisplayCache> cir, String string, int i, int j, IntList intList, List<BookEditScreen.LineInfo> list, MutableInt mutableInt, MutableBoolean mutableBoolean, StringSplitter stringSplitter) {
+        Component formattedPageText = SYNTAX_HIGHLIGHTER.formatPageText(string);
+
         stringSplitter.splitLines(string, 114, Style.EMPTY, true, (style, start, end) -> {
             int k = mutableInt.getAndIncrement();
             String string2 = string.substring(start, end);
@@ -196,7 +199,12 @@ public abstract class BookEditScreenMixin extends Screen {
             int l = k * 9;
             BookEditScreen.Pos2i pos2i = this.convertLocalToScreen(new BookEditScreen.Pos2i(0, l));
             intList.add(start);
-            list.add(new BookEditScreen.LineInfo(style, string3, pos2i.x, pos2i.y));
+
+            Component currentComponent = ComponentUtils.splitAt(ComponentUtils.splitAt(formattedPageText, start).getSecond(), end).getFirst();
+
+            BookEditScreen.LineInfo lineInfo = new BookEditScreen.LineInfo(style, string3, pos2i.x, pos2i.y);
+            ((LineInfoAccessor) lineInfo).setAsComponent(currentComponent);
+            list.add(lineInfo);
         });
     }
 

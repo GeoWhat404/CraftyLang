@@ -45,6 +45,11 @@ public class Modules {
 
         // FILES
         File dir = new File(CraftyLangClient.SOURCE_FILES);
+
+        if (dir.listFiles() == null) {
+            return;
+        }
+
         for (File file : Objects.requireNonNull(dir.listFiles())) {
             builder = new StringBuilder();
             if (file.getName().endsWith(".crs")) {

@@ -7,6 +7,7 @@
   ],
   "client": [
     "BookEditScreenMixin",
+    "LineInfoAccessor",
     "MinecraftAccessor"
   ],
   "injectors": {
