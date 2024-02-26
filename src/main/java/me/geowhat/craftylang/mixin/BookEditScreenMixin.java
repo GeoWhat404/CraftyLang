@@ -1,6 +1,7 @@
 package me.geowhat.craftylang.mixin;
 
 import it.unimi.dsi.fastutil.ints.IntList;
+import me.geowhat.craftylang.client.util.Exporter;
 import me.geowhat.craftylang.interpreter.*;
 import me.geowhat.craftylang.interpreter.preprocessor.Preprocessor;
 import me.geowhat.craftylang.interpreter.syntax.SyntaxColorPalette;
@@ -18,23 +19,22 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 
 @Mixin(BookEditScreen.class)
 public abstract class BookEditScreenMixin extends Screen {
 
+    @Unique
     private static final SyntaxHighlighter SYNTAX_HIGHLIGHTER = new SyntaxHighlighter(
             new SyntaxColorPalette(
                     0x797978,
@@ -46,6 +46,8 @@ public abstract class BookEditScreenMixin extends Screen {
 
     @Unique private Button interpretButton;
     @Unique private Button saveChangesButton;
+    @Unique private Button exportButton;
+    @Unique private Button reloadModuleButton;
 
     @Unique private final int baseButtonWidth = 98;
     @Unique private final int baseButtonHeight = 20;
@@ -76,10 +78,7 @@ public abstract class BookEditScreenMixin extends Screen {
 
     @Shadow public abstract boolean keyPressed(int i, int j, int k);
 
-    @Shadow private int lastIndex;
-
-
-    @Shadow protected abstract BookEditScreen.DisplayCache getDisplayCache();
+    @Shadow @Final private ItemStack book;
 
     @Shadow @Nullable private BookEditScreen.DisplayCache displayCache;
 
@@ -174,8 +173,18 @@ public abstract class BookEditScreenMixin extends Screen {
            this.saveChanges(false);
         }).bounds(this.width / 2 + 2, 196 + baseButtonHeight + 5, baseButtonWidth, baseButtonHeight).build();
 
+        exportButton = Button.builder(Component.literal("Export code"), button -> {
+            Exporter.export(book.getHoverName().getString(), pages);
+        }).bounds(this.width / 2 - 100, 196 + 2 * (baseButtonHeight + 5), baseButtonWidth, baseButtonHeight).build();
+
+        reloadModuleButton = Button.builder(Component.literal("Reload all modules"), button -> {
+            Modules.reload();
+        }).bounds(this.width / 2 + 2, 196 + 2 * (baseButtonHeight + 5), baseButtonWidth, baseButtonHeight).build();
+
         this.addRenderableWidget(interpretButton);
         this.addRenderableWidget(saveChangesButton);
+        this.addRenderableWidget(exportButton);
+        this.addRenderableWidget(reloadModuleButton);
     }
 
     @Redirect(method = "rebuildDisplayCache", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/StringSplitter;splitLines(Ljava/lang/String;ILnet/minecraft/network/chat/Style;ZLnet/minecraft/client/StringSplitter$LinePosConsumer;)V"))

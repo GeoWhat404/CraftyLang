@@ -17,7 +17,7 @@ public class CraftyConfigurationScreen extends Screen {
 
     private static final String title = "CraftyLang Configuration Menu";
 
-    private final int maxWhileLimit = 8192;
+    private final int maxWhileLimit = 16384;
     private final int maxFunctionArgs = 2048;
 
     private AbstractSliderButton whileLoopLimitSlider;

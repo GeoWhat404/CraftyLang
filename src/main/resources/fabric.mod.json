@@ -3,9 +3,9 @@
   "id": "craftylang",
   "version": "${version}",
   "name": "CraftyLang",
-  "description": "Allows scripting in books that can be executed",
+  "description": "Ever wanted to write little scripts inside minecraft books? No? Well you can do that now!",
   "authors": [
-    "GeoWhat"
+    "GeoWhat", "Walmqrt"
   ],
   "contact": {
     "repo": "https://github.com/GeoWhat/CraftyLang"
@@ -21,6 +21,7 @@
       "me.geowhat.craftylang.CraftyLang"
     ]
   },
+
   "mixins": [
     "craftylang.mixins.json"
   ],

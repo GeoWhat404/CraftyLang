@@ -28,6 +28,13 @@ public class Preprocessor {
                 if (word.trim().equals("use")) {
                     resolveModule(wordIdx);
                 }
+            } else if (current == '#') {
+                int idx = c;
+                while (idx < src.length() && src.charAt(idx) != '\n') {
+                    builder.insert(idx, ' ');
+                    idx++;
+                }
+                c = idx;
             }
         }
     }

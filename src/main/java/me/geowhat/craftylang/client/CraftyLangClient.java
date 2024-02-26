@@ -8,14 +8,19 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class CraftyLangClient implements ClientModInitializer {
 
     public static final String VERSION = "v1.0.0 alpha";
     public static final String MODID = "craftylang";
+    public static final String CRAFTY_PATH = "./config/crafty/";
+    public static final String SOURCE_FILES = CRAFTY_PATH + "source/";
+
     public static Logger logger = LogManager.getLogger(MODID);
 
-    private final String configFile = "./config/craftyconfig.json";
+    private final String configFile = CRAFTY_PATH + "craftyconfig.json";
     private Configuration config;
 
     @Override
@@ -25,6 +30,14 @@ public class CraftyLangClient implements ClientModInitializer {
         CraftScript.init();
         Keywords.addKeywords();
         KeyBindings.register();
+
+        try {
+            Files.createDirectories(Paths.get(CRAFTY_PATH));
+            Files.createDirectories(Paths.get(SOURCE_FILES));
+
+        } catch (IOException e) {
+            logger.error(e);
+        }
 
         logger.info("Loading config file");
         try {

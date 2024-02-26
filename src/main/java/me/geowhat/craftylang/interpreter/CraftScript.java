@@ -1,22 +1,28 @@
 package me.geowhat.craftylang.interpreter;
 
+import me.geowhat.craftylang.client.CraftyLangClient;
 import me.geowhat.craftylang.client.util.Message;
 import me.geowhat.craftylang.client.util.Scheduler;
+import me.geowhat.craftylang.client.util.Timer;
+import me.geowhat.craftylang.crs.CRSMath;
 import me.geowhat.craftylang.interpreter.ast.Parser;
 import me.geowhat.craftylang.interpreter.ast.Statement;
 import me.geowhat.craftylang.interpreter.error.ModuleError;
 import me.geowhat.craftylang.interpreter.error.RuntimeError;
 
+import java.io.*;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class CraftScript {
 
     public static final int SUCCESS_CODE = 0;
-    public static final int PARSE_ERROR_CODE = 1;
-    public static final int RUNTIME_ERROR_CODE = 2;
-    public static final int USER_REQUEST_CODE = 3;
+    public static final int INTERPRET_ERROR_CODE = 1;
+    public static final int PARSE_ERROR_CODE = 2;
+    public static final int RUNTIME_ERROR_CODE = 3;
+    public static final int USER_REQUEST_CODE = 4;
 
     public static boolean running = false;
 
@@ -26,104 +32,42 @@ public class CraftScript {
 
     private static Interpreter interpreter;
 
+    public static Timer timer;
+
     public static void init() {
+        timer = new Timer();
+        timer.start();
 
-        // TODO: make this better pls
-        String mathCode =
-                """
-                        let PI = 3.14159265358979;
-
-                        fn min(a, b) {
-                          if (a > b) {
-                            ret b;
-                          }
-                          ret a;
-                        }
-
-                        fn max(a, b) {
-                          if (a > b) {
-                            ret a;
-                          }
-                          ret b;
-                        }
-
-                        fn abs(a) {
-                          if (a > 0 | a == 0) {
-                            ret a;
-                          }
-                          ret -a;
-                        }
-
-                        fn avg(a, b) {
-                          ret (a + b) / 2;
-                        }
-
-                        fn sqrt(n) {
-                          let l = min(1, n);
-                          let h = max(1, n);
-                          let m = 0;
-
-                          while(100*l*l<n) {
-                            l = l * 10;
-                          }
-                          while (0.01*h*h>n) {
-                            h = h * 0.1;
-                          } \s
-                          for(let i=0;i<100;i=i+1) {
-                            m = (l+h)/2;
-                            if (m*m==n) {
-                              ret m;
-                            } if (m*m > n) {
-                              h = m;
-                            } else {
-                              l = m;
-                            }
-                          }\s
-                          ret m;   \s
-                        }
-
-                        fn pow(a, e) {
-                          if (e == 0 & a == 0) {
-                            ret 1;
-                          } if (e == 1) {
-                            ret a;
-                          } if (e < 0) {
-                            ret pow(a, -e);
-                          } else {
-                            let r = 1;
-                            while (e > 0) {
-                              r = r * a;
-                              e = e - 1;
-                            }
-                            ret r;
-                          }
-                        }
-
-                        fn hypot(a, b) {
-                          ret sqrt(pow(a, 2) + pow(b, 2));
-                        }""";
-        Modules.modules.put("math", mathCode);
+        Modules.reload();
     }
 
     public static void run(String src) {
         Message.sendDebug("Running new script");
-
         Scheduler.startExecution();
 
         hadError = false;
         hadRuntimeError = false;
 
+        interpreter = new Interpreter();
+
         Lexer lexer = new Lexer(src);
         List<Token> tokens = lexer.lex();
+
+        if (hadError) {
+            Message.sendError("Error while lexing");
+            interpreter.exitInterpreter(INTERPRET_ERROR_CODE);
+            return;
+        }
+
         Parser parser = new Parser(tokens);
         List<Statement> statements = parser.parse();
-        interpreter = new Interpreter();
 
         if (hadError) {
             Message.sendError("Error while parsing");
             interpreter.exitInterpreter(PARSE_ERROR_CODE);
             return;
         }
+
         running = true;
 
         new Resolver(interpreter).resolve(statements);

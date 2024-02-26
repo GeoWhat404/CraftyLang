@@ -13,6 +13,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
 
@@ -24,9 +25,12 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     public Interpreter() {
         registerGlobals();
+
     }
 
     public void exitInterpreter(int code) {
+        Message.sendDebug("Stopping execution: " + code);
+
         Scheduler.stopExecution();
 
         shouldStopExecution = true;
@@ -40,23 +44,26 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         Message.sendNewline();
     }
 
-    private void registerGlobals() {
+    public void registerGlobals() {
         Message.sendDebug("Loading predefined globals");
 
         globals.define("VERSION", CraftyLangClient.VERSION);
 
         assert Minecraft.getInstance().player != null;
-        globals.redefine("xc", Math.round(Minecraft.getInstance().player.getX()));
-        globals.redefine("yc", Math.round(Minecraft.getInstance().player.getY()));
-        globals.redefine("zc", Math.round(Minecraft.getInstance().player.getZ()));
+        globals.define("xc", Minecraft.getInstance().player.getX());
+        globals.define("yc", Minecraft.getInstance().player.getY());
+        globals.define("zc", Minecraft.getInstance().player.getZ());
+        globals.define("time", Minecraft.getInstance().player.level().getGameTime());
 
         ClientTickEvents.END_CLIENT_TICK.register(event -> {
             if (Minecraft.getInstance().player != null) {
                 globals.redefine("xc", Math.round(Minecraft.getInstance().player.getX()));
                 globals.redefine("yc", Math.round(Minecraft.getInstance().player.getY()));
                 globals.redefine("zc", Math.round(Minecraft.getInstance().player.getZ()));
+                globals.redefine("time", Math.round(Minecraft.getInstance().player.level().getGameTime()));
             }
         });
+
 
         globals.define("glob", new CraftScriptCallable() {
             @Override
@@ -67,6 +74,64 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             @Override
             public Object call(Interpreter interpreter, List<Object> args) {
                 Message.sendGlobal(stringify(args.get(0)));
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return "<builtin fn>";
+            }
+        });
+
+        globals.define("exec", new CraftScriptCallable() {
+            @Override
+            public int arity() {
+                return 1;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> args) {
+                Minecraft.getInstance().player.connection.sendCommand(stringify(args.get(0)));
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return "<builtin fn>";
+            }
+        });
+
+        globals.define("sleep", new CraftScriptCallable() {
+            @Override
+            public int arity() {
+                return 1;
+            }
+
+            @Override
+            public Object call(Interpreter interpreter, List<Object> args) {
+                AtomicInteger beginTicks = new AtomicInteger();
+
+                int delay = 0;
+                try {
+                    delay = Integer.parseInt(stringify(args.get(0)));
+                } catch (NumberFormatException e) {
+                    Message.sendError("Invalid sleep() delay");
+                }
+
+                int finalDelay = delay;
+                CraftScript.timer.setCode(() -> {
+                    while (beginTicks.get() <= finalDelay) {
+                        beginTicks.getAndIncrement();
+                    }
+                    Message.sendDebug("1");
+                    CraftScript.timer.stop(); // Stop the timer after the code is executed
+                    if (CraftScript.timer.getOnCompletionListener() != null) {
+                        CraftScript.timer.getOnCompletionListener().run(); // Execute the listener if it's set
+                    }
+                });
+
+                CraftScript.timer.setOnCompletionListener(() -> Message.sendDebug("2"));
+
                 return null;
             }
 
@@ -104,6 +169,11 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             public Object call(Interpreter interpreter, List<Object> args) {
                 Minecraft.getInstance().gui.getChat().clearMessages(true);
                 return null;
+            }
+
+            @Override
+            public String toString() {
+                return "<builtin fn>";
             }
         });
 
@@ -156,6 +226,11 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
                 mca.attack();
 
                 return null;
+            }
+
+            @Override
+            public String toString() {
+                return "<builtin fn>";
             }
         });
     }
@@ -337,6 +412,12 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
+    public Void visitBreakStatement(Statement.BreakStatement statement) {
+        
+        return null;
+    }
+
+    @Override
     public Void visitExpressionStatement(Statement.ExpressionStatement statement) {
         evaluate(statement.expr);
         return null;
@@ -410,7 +491,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
         while (isTruthy(evaluate(statement.condition))) {
             if (counter++ > CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS) {
-                Message.sendError("While loop iteration limit reached (" + CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS + ")");
+                Message.sendDebug("While loop iteration limit reached (" + CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS + ")");
                 break;
             }
 

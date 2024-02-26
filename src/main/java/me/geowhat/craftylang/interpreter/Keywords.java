@@ -8,6 +8,7 @@ public class Keywords {
     public static final Map<String, TokenType> keywords = new HashMap<>();
 
     public static void addKeywords() {
+        keywords.put("break", TokenType.BREAK);
         keywords.put("else", TokenType.ELSE);
         keywords.put("F", TokenType.FALSE);
         keywords.put("fn", TokenType.FUNCTION);
