@@ -2,7 +2,9 @@ package me.geowhat.craftylang.mixin;
 
 import it.unimi.dsi.fastutil.ints.IntList;
 import me.geowhat.craftylang.client.util.Exporter;
-import me.geowhat.craftylang.interpreter.*;
+import me.geowhat.craftylang.interpreter.CraftScript;
+import me.geowhat.craftylang.interpreter.Keywords;
+import me.geowhat.craftylang.interpreter.Modules;
 import me.geowhat.craftylang.interpreter.preprocessor.Preprocessor;
 import me.geowhat.craftylang.interpreter.syntax.SyntaxColorPalette;
 import me.geowhat.craftylang.interpreter.syntax.SyntaxHighlighter;
@@ -11,25 +13,22 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.BookEditScreen;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.jetbrains.annotations.Nullable;
-import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 @Mixin(BookEditScreen.class)
 public abstract class BookEditScreenMixin extends Screen {
@@ -79,10 +78,6 @@ public abstract class BookEditScreenMixin extends Screen {
     @Shadow public abstract boolean keyPressed(int i, int j, int k);
 
     @Shadow @Final private ItemStack book;
-
-    @Shadow @Nullable private BookEditScreen.DisplayCache displayCache;
-
-    @Shadow protected abstract String getCurrentPageText();
 
     @Shadow protected abstract BookEditScreen.Pos2i convertLocalToScreen(BookEditScreen.Pos2i pos2i);
 
