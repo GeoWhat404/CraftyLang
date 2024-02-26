@@ -1,9 +1,11 @@
 package me.geowhat.craftylang.mixin;
 
+import it.unimi.dsi.fastutil.ints.IntList;
 import me.geowhat.craftylang.interpreter.*;
 import me.geowhat.craftylang.interpreter.preprocessor.Preprocessor;
 import me.geowhat.craftylang.interpreter.syntax.SyntaxColorPalette;
 import me.geowhat.craftylang.interpreter.syntax.SyntaxHighlighter;
+import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -11,22 +13,34 @@ import net.minecraft.client.gui.screens.inventory.BookEditScreen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableInt;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 @Mixin(BookEditScreen.class)
 public abstract class BookEditScreenMixin extends Screen {
 
     private static final SyntaxHighlighter SYNTAX_HIGHLIGHTER = new SyntaxHighlighter(
-            new SyntaxColorPalette(0x797978, 0x0099e6),
+            new SyntaxColorPalette(
+                    0x797978,
+                    0x0099e6,
+                    0xc38e22,
+                    0xdd713c),
             Keywords.keywords.keySet()
     );
 
@@ -66,6 +80,12 @@ public abstract class BookEditScreenMixin extends Screen {
 
 
     @Shadow protected abstract BookEditScreen.DisplayCache getDisplayCache();
+
+    @Shadow @Nullable private BookEditScreen.DisplayCache displayCache;
+
+    @Shadow protected abstract String getCurrentPageText();
+
+    @Shadow protected abstract BookEditScreen.Pos2i convertLocalToScreen(BookEditScreen.Pos2i pos2i);
 
     @Unique
     private void updatePageMessage() {
@@ -158,26 +178,45 @@ public abstract class BookEditScreenMixin extends Screen {
         this.addRenderableWidget(saveChangesButton);
     }
 
-    @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I", ordinal = 3), index = 1)
-    public Component modifyComponentArg(Component component) {
-        MutableComponent newComponent = Component.empty();
-        String[] words = component.getString().split(" ");
+    @Redirect(method = "rebuildDisplayCache", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/StringSplitter;splitLines(Ljava/lang/String;ILnet/minecraft/network/chat/Style;ZLnet/minecraft/client/StringSplitter$LinePosConsumer;)V"))
+    public void splitLines(StringSplitter instance, String string, int i, Style style, boolean bl, StringSplitter.LinePosConsumer linePosConsumer) {}
 
-        Iterator<String> iterator = Arrays.stream(words).iterator();
-
-        while (iterator.hasNext()) {
-            String word = iterator.next();
-
-            int textColor = SYNTAX_HIGHLIGHTER.getTextColor(word);
-            Component wordComponent = Component.literal(word).withColor(textColor);
-
-            newComponent.append(wordComponent);
-
-            if (iterator.hasNext()) {
-                newComponent.append(CommonComponents.space());
-            }
-        }
-
-        return newComponent;
+    @Inject(method = "rebuildDisplayCache", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/StringSplitter;splitLines(Ljava/lang/String;ILnet/minecraft/network/chat/Style;ZLnet/minecraft/client/StringSplitter$LinePosConsumer;)V"), locals = LocalCapture.CAPTURE_FAILHARD)
+    public void splitLinesInjection(CallbackInfoReturnable<BookEditScreen.DisplayCache> cir, String string, int i, int j, IntList intList, List<BookEditScreen.LineInfo> list, MutableInt mutableInt, MutableBoolean mutableBoolean, StringSplitter stringSplitter) {
+        stringSplitter.splitLines(string, 114, Style.EMPTY, true, (style, start, end) -> {
+            int k = mutableInt.getAndIncrement();
+            String string2 = string.substring(start, end);
+            mutableBoolean.setValue(string2.endsWith("\n"));
+            String string3 = StringUtils.stripEnd(string2, " \n");
+            Objects.requireNonNull(this.font);
+            int l = k * 9;
+            BookEditScreen.Pos2i pos2i = this.convertLocalToScreen(new BookEditScreen.Pos2i(0, l));
+            intList.add(start);
+            list.add(new BookEditScreen.LineInfo(style, string3, pos2i.x, pos2i.y));
+        });
     }
+
+
+//    @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I", ordinal = 3), index = 1)
+//    public Component modifyComponentArg(Component component) {
+//        MutableComponent newComponent = Component.empty();
+//        String[] words = component.getString().split(" ");
+//
+//        Iterator<String> iterator = Arrays.stream(words).iterator();
+//
+//        while (iterator.hasNext()) {
+//            String word = iterator.next();
+//
+//            int textColor = SYNTAX_HIGHLIGHTER.getTextColor(word);
+//            Component wordComponent = Component.literal(word).withColor(textColor);
+//
+//            newComponent.append(wordComponent);
+//
+//            if (iterator.hasNext()) {
+//                newComponent.append(CommonComponents.space());
+//            }
+//        }
+//
+//        return newComponent;
+//    }
 }
