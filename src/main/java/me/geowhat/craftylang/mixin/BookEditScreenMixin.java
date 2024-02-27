@@ -17,7 +17,6 @@ import net.minecraft.client.gui.screens.inventory.BookEditScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.ItemStack;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.spongepowered.asm.mixin.*;
@@ -147,7 +146,6 @@ public abstract class BookEditScreenMixin extends Screen {
 
             // TODO: fix this because this is a bit too much for a mixin :D
             StringBuilder builder = new StringBuilder();
-            Preprocessor resolver = null;
 
             for (int i = 0; i < pages.size(); i++) {
                 builder.append(new Preprocessor(pages.get(i)));
@@ -165,17 +163,9 @@ public abstract class BookEditScreenMixin extends Screen {
 
         }).bounds(this.width / 2 - 100, 196 + baseButtonHeight + 5, baseButtonWidth, baseButtonHeight).build();
 
-        saveChangesButton = Button.builder(Component.literal("Save Changes"), button -> {
-           this.saveChanges(false);
-        }).bounds(this.width / 2 + 2, 196 + baseButtonHeight + 5, baseButtonWidth, baseButtonHeight).build();
-
-        exportButton = Button.builder(Component.literal("Export code"), button -> {
-            Exporter.export(book.getHoverName().getString(), pages);
-        }).bounds(this.width / 2 - 100, 196 + 2 * (baseButtonHeight + 5), baseButtonWidth, baseButtonHeight).build();
-
-        reloadModuleButton = Button.builder(Component.literal("Reload all modules"), button -> {
-            Modules.reload();
-        }).bounds(this.width / 2 + 2, 196 + 2 * (baseButtonHeight + 5), baseButtonWidth, baseButtonHeight).build();
+        saveChangesButton = Button.builder(Component.literal("Save Changes"), button -> this.saveChanges(false)).bounds(this.width / 2 + 2, 196 + baseButtonHeight + 5, baseButtonWidth, baseButtonHeight).build();
+        exportButton = Button.builder(Component.literal("Export code"), button -> Exporter.export(book.getHoverName().getString(), pages)).bounds(this.width / 2 - 100, 196 + 2 * (baseButtonHeight + 5), baseButtonWidth, baseButtonHeight).build();
+        reloadModuleButton = Button.builder(Component.literal("Reload all modules"), button -> Modules.reload()).bounds(this.width / 2 + 2, 196 + 2 * (baseButtonHeight + 5), baseButtonWidth, baseButtonHeight).build();
 
         this.addRenderableWidget(interpretButton);
         this.addRenderableWidget(saveChangesButton);
@@ -194,41 +184,17 @@ public abstract class BookEditScreenMixin extends Screen {
             int k = mutableInt.getAndIncrement();
             String string2 = string.substring(start, end);
             mutableBoolean.setValue(string2.endsWith("\n"));
-            String string3 = StringUtils.stripEnd(string2, " \n");
             Objects.requireNonNull(this.font);
             int l = k * 9;
             BookEditScreen.Pos2i pos2i = this.convertLocalToScreen(new BookEditScreen.Pos2i(0, l));
             intList.add(start);
 
-            Component currentComponent = ComponentUtils.splitAt(ComponentUtils.splitAt(formattedPageText, start).getSecond(), end).getFirst();
+            Component currentComponent = ComponentUtils.substring(formattedPageText, start, end);
+            currentComponent = ComponentUtils.stripEnd(currentComponent, "\n");
 
-            BookEditScreen.LineInfo lineInfo = new BookEditScreen.LineInfo(style, string3, pos2i.x, pos2i.y);
+            BookEditScreen.LineInfo lineInfo = new BookEditScreen.LineInfo(style, currentComponent.getString(), pos2i.x, pos2i.y);
             ((LineInfoAccessor) lineInfo).setAsComponent(currentComponent);
             list.add(lineInfo);
         });
     }
-
-
-//    @ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I", ordinal = 3), index = 1)
-//    public Component modifyComponentArg(Component component) {
-//        MutableComponent newComponent = Component.empty();
-//        String[] words = component.getString().split(" ");
-//
-//        Iterator<String> iterator = Arrays.stream(words).iterator();
-//
-//        while (iterator.hasNext()) {
-//            String word = iterator.next();
-//
-//            int textColor = SYNTAX_HIGHLIGHTER.getTextColor(word);
-//            Component wordComponent = Component.literal(word).withColor(textColor);
-//
-//            newComponent.append(wordComponent);
-//
-//            if (iterator.hasNext()) {
-//                newComponent.append(CommonComponents.space());
-//            }
-//        }
-//
-//        return newComponent;
-//    }
 }

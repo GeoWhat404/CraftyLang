@@ -56,4 +56,42 @@ public final class ComponentUtils {
         return Pair.of(Component.empty(), Component.empty());
     }
 
+    public static Component substring(Component component, int start, int end) {
+        if (start == 0) {
+            return splitAt(component, end).getFirst();
+        }
+
+        Component firstComponent = splitAt(component, start).getSecond();
+        return splitAt(firstComponent, end - start).getFirst();
+    }
+
+    // probably doesn't work as intended, but it works for my specific case.
+    public static Component stripEnd(Component component, String stripChars) {
+        if (component.getString().isEmpty() || component.getString().equals(stripChars)) {
+            return Component.empty();
+        }
+
+        List<Component> componentList = component.toFlatList();
+
+        int matches = 0;
+
+        for (int i = componentList.size() - 1; i >= 0; i--) {
+            Component currentComponent = componentList.get(i);
+            String string = currentComponent.getString();
+
+            for (int charIndex = string.length() - 1; i >= 0; i--) {
+                char c = string.charAt(charIndex);
+
+                if (c != stripChars.charAt((string.length() - 1) - charIndex)) {
+                    return component;
+                }
+
+                if (++matches == stripChars.length()) {
+                    return substring(component, 0, (component.getString().length() - 1) - (stripChars.length() - 1));
+                }
+            }
+        }
+
+        return component;
+    }
 }
