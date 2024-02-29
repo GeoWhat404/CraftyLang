@@ -13,24 +13,27 @@ import org.lwjgl.glfw.GLFW;
 
 public class KeyBindings {
 
-    private static KeyMapping openConfigKey;
-    private static KeyMapping killKey;
+    public static KeyMapping openConfigKey;
+    public static KeyMapping killKey;
     private static final String KEY_CATEGORY = "category.craftylang.keys";
     private static final String CONFIG_KEY = "key.craftylang.config";
     private static final String KILL_KEY = "key.craftylang.kill_exec";
+
+    public static int killKeyCode = GLFW.GLFW_KEY_K;
+    public static int openConfigKeyCode = GLFW.GLFW_KEY_N;
 
     public static void register() {
         openConfigKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 CONFIG_KEY,
                 InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_N,
+                openConfigKeyCode,
                 KEY_CATEGORY
         ));
 
         killKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 KILL_KEY,
                 InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_K,
+                killKeyCode,
                 KEY_CATEGORY
         ));
 

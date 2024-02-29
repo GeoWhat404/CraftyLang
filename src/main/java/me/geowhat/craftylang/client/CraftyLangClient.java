@@ -1,16 +1,18 @@
 package me.geowhat.craftylang.client;
 
+import me.geowhat.craftylang.client.util.Message;
 import me.geowhat.craftylang.interpreter.CraftScript;
 import me.geowhat.craftylang.interpreter.Keywords;
 import me.geowhat.craftylang.interpreter.syntax.ColorScheme;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.minecraft.client.player.LocalPlayer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -18,7 +20,7 @@ import java.util.Map;
 
 public class CraftyLangClient implements ClientModInitializer {
 
-    public static final String VERSION = "v1.0.0 alpha";
+    public static final String VERSION = "v1.2.0 alpha";
     public static final String MODID = "craftylang";
     public static final String CRAFTY_PATH = "./config/crafty/";
     public static final String SOURCE_FILES = CRAFTY_PATH + "source/";
@@ -29,6 +31,8 @@ public class CraftyLangClient implements ClientModInitializer {
 
     private final String configFile = CRAFTY_PATH + "craftyconfig.json";
     private Configuration config;
+
+    public static boolean firstLoad = false;
 
     private void addColorScheme(String name) throws IOException {
         InputStream is = getClass().getClassLoader().getResourceAsStream("assets/craftylang/themes/" + name + ".json");
@@ -75,6 +79,10 @@ public class CraftyLangClient implements ClientModInitializer {
             config = new Configuration();
         }
 
+        if (CraftyLangSettings.COLOR_SCHEME == null) {
+            CraftyLangSettings.COLOR_SCHEME = colorSchemes.get("default");
+        }
+
         ClientLifecycleEvents.CLIENT_STOPPING.register(event -> {
             CraftScript.executorService.shutdown();
 
@@ -85,5 +93,17 @@ public class CraftyLangClient implements ClientModInitializer {
             config.setColorScheme(CraftyLangSettings.COLOR_SCHEME.getName());
             config.saveJsonFile(configFile);
         });
+
+        ClientEntityEvents.ENTITY_LOAD.register(((entity, world) -> {
+            if (entity instanceof LocalPlayer && firstLoad) {
+                firstLoad = false;
+
+                Message.sendSuccess("CraftyLang Version: " + VERSION);
+                Message.sendSuccess("To configure various settings press: " + KeyBindings.openConfigKey.getDefaultKey().getDisplayName().getString());
+                Message.sendSuccess("If you want to kill a program press: " + KeyBindings.killKey.getDefaultKey().getDisplayName().getString());
+                Message.sendSuccess("To get started open a book and quill and start coding!");
+                Message.sendSuccess("For more info visit the github page at: https://github.com/GeoWhat404/CraftyLang");
+            }
+        }));
     }
 }

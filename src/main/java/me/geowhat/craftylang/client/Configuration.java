@@ -2,8 +2,10 @@ package me.geowhat.craftylang.client;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import me.geowhat.craftylang.client.util.Message;
 
 import java.io.*;
+import java.nio.file.FileAlreadyExistsException;
 
 public class Configuration {
 
@@ -24,6 +26,8 @@ public class Configuration {
 
     public static Configuration fromJson(String filepath) throws IOException {
         if (!configExists(filepath)) {
+            CraftyLangClient.firstLoad = true;
+            CraftyLangClient.logger.info("Creating new config file");
             return new Configuration();
         }
 
