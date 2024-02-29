@@ -2,16 +2,13 @@ package me.geowhat.craftylang.interpreter.syntax;
 
 import com.mojang.datafixers.util.Pair;
 import me.geowhat.craftylang.utils.ComponentUtils;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 public final class SyntaxHighlighter {
 
@@ -60,9 +57,5 @@ public final class SyntaxHighlighter {
         }
 
         return newComponent;
-    }
-
-    private static Stream<MatchResult> getMatchResults(Pattern pattern, String text) {
-        return pattern.matcher(text).results();
     }
 }
