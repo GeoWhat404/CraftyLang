@@ -1,6 +1,8 @@
 package me.geowhat.craftylang.mixin;
 
 import it.unimi.dsi.fastutil.ints.IntList;
+import me.geowhat.craftylang.client.CraftyLangClient;
+import me.geowhat.craftylang.client.CraftyLangSettings;
 import me.geowhat.craftylang.client.util.Exporter;
 import me.geowhat.craftylang.interpreter.CraftScript;
 import me.geowhat.craftylang.interpreter.Keywords;
@@ -27,6 +29,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import java.security.Key;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,12 +37,8 @@ import java.util.Objects;
 public abstract class BookEditScreenMixin extends Screen {
 
     @Unique
-    private static final SyntaxHighlighter SYNTAX_HIGHLIGHTER = new SyntaxHighlighter(
-            new SyntaxColorPalette(
-                    0x797978,
-                    0x0099e6,
-                    0xc38e22,
-                    0xdd713c),
+    private static SyntaxHighlighter SYNTAX_HIGHLIGHTER = new SyntaxHighlighter(
+            CraftyLangSettings.COLOR_SCHEME.toSyntaxColorPalette(),
             Keywords.keywords.keySet()
     );
 
@@ -83,6 +82,16 @@ public abstract class BookEditScreenMixin extends Screen {
 
     @Unique
     private void updatePageMessage() {
+        if (!CraftyLangSettings.ENABLE_SYNTAX_HIGHLIGHTING) {
+            SYNTAX_HIGHLIGHTER.setSyntaxColorPalette(
+                    CraftyLangClient.colorSchemes.get("default").toSyntaxColorPalette()
+            );
+        } else if (CraftyLangSettings.COLOR_SCHEME.toSyntaxColorPalette() != SYNTAX_HIGHLIGHTER.getSyntaxColorPalette()) {
+            SYNTAX_HIGHLIGHTER.setSyntaxColorPalette(
+                    CraftyLangSettings.COLOR_SCHEME.toSyntaxColorPalette()
+            );
+        }
+
         if (!this.savedChanges)
             this.pageMsg = Component.literal("*").append(Component.translatable("book.pageIndicator", this.currentPage + 1, this.getNumPages()));
         else
@@ -147,6 +156,8 @@ public abstract class BookEditScreenMixin extends Screen {
             // TODO: fix this because this is a bit too much for a mixin :D
             StringBuilder builder = new StringBuilder();
 
+            System.out.println(pages);
+
             for (int i = 0; i < pages.size(); i++) {
                 builder.append(new Preprocessor(pages.get(i)));
                 builder.append(pages.get(i).replaceAll("![A-Za-z]+ [A-Za-z0-9]+", ""));
@@ -157,7 +168,6 @@ public abstract class BookEditScreenMixin extends Screen {
             }
             CraftScript.run(builder.toString());
 
-            this.currentPage = getNumPages() - 1;
             this.updateButtonVisibility();
             this.clearDisplayCache();
 

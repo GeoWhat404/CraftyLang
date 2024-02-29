@@ -3,6 +3,7 @@ package me.geowhat.craftylang.client.screen;
 import me.geowhat.craftylang.client.CraftyLangSettings;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
@@ -17,6 +18,8 @@ public class CraftyConfigurationScreen extends Screen {
 
     private static final String title = "CraftyLang Configuration Menu";
 
+    private final Screen parent;
+
     private final int maxWhileLimit = 16384;
     private final int maxFunctionArgs = 2048;
 
@@ -24,12 +27,17 @@ public class CraftyConfigurationScreen extends Screen {
     private AbstractSliderButton functionArgsLimitSlider;
     private Button debugModeToggleButton;
 
+    private Button colorSchemeConfigurationButton;
+    private Button doneButton;
+
     private final int baseWidth = 200;
     private final int baseHeight = 20;
     private final int basePadding = 4;
 
-    public CraftyConfigurationScreen() {
+    public CraftyConfigurationScreen(Screen parent) {
         super(Component.literal(title));
+
+        this.parent = parent;
     }
 
     private double calculateValue(AbstractSliderButton slider, double value) {
@@ -79,6 +87,18 @@ public class CraftyConfigurationScreen extends Screen {
         };
         functionArgsLimitSlider.setTooltip(Tooltip.create(Component.literal("Maximum number of arguments in a function call")));
 
+        colorSchemeConfigurationButton = Button.builder(Component.literal("Configure color scheme..."), button -> {
+            minecraft.setScreen(new ColorSchemeEditScreen(this));
+        })
+        .bounds(width / 2 - baseWidth / 2, height / 4 + 3 * (baseHeight + basePadding), baseWidth, baseHeight)
+        .build();
+
+        doneButton = Button.builder(CommonComponents.GUI_DONE, button -> {
+            minecraft.setScreen(parent);
+        })
+        .bounds(width / 2 - baseWidth / 2, height / 4 + 4 * (baseHeight + basePadding), baseWidth, baseHeight)
+        .build();
+
         // set the correct value (cursed++)
         whileLoopLimitSlider.onClick(calculateValue(whileLoopLimitSlider, (double) CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS / maxWhileLimit), 0);
         functionArgsLimitSlider.onClick(calculateValue(whileLoopLimitSlider, (double) CraftyLangSettings.MAX_FUNCTION_ARGS / maxFunctionArgs), 0);
@@ -86,5 +106,7 @@ public class CraftyConfigurationScreen extends Screen {
         addRenderableWidget(debugModeToggleButton);
         addRenderableWidget(whileLoopLimitSlider);
         addRenderableWidget(functionArgsLimitSlider);
+        addRenderableWidget(colorSchemeConfigurationButton);
+        addRenderableWidget(doneButton);
     }
 }

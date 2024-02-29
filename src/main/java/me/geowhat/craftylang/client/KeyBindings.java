@@ -36,7 +36,7 @@ public class KeyBindings {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (openConfigKey.consumeClick()) {
-                Minecraft.getInstance().setScreen(new CraftyConfigurationScreen());
+                Minecraft.getInstance().setScreen(new CraftyConfigurationScreen(Minecraft.getInstance().screen));
             }
 
             while (killKey.consumeClick()) {

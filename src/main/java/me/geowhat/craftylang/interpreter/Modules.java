@@ -1,6 +1,7 @@
 package me.geowhat.craftylang.interpreter;
 
 import me.geowhat.craftylang.client.CraftyLangClient;
+import me.geowhat.craftylang.client.CraftyLangSettings;
 import me.geowhat.craftylang.client.util.Message;
 import me.geowhat.craftylang.crs.CRSMath;
 import net.minecraft.client.Minecraft;
@@ -89,7 +90,10 @@ public class Modules {
             }
         }
 
-        printDefinitions();
+        if (CraftyLangSettings.DEBUG_MODE)
+            printDefinitions();
+
+        Message.sendSuccess("Reloaded all modules");
     }
 
     public static void printDefinitions() {

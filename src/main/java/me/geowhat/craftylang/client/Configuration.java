@@ -10,6 +10,8 @@ public class Configuration {
     private boolean debugMode;
     private int maxWhileLoopIteration;
     private int maxFunctionArgs;
+    private boolean enableSyntaxHighlighting;
+    private String colorScheme;
 
     private static boolean configExists(String filepath) {
         return new File(filepath).exists();
@@ -64,5 +66,21 @@ public class Configuration {
 
     public void setMaxFunctionArgs(int max) {
         this.maxFunctionArgs = max;
+    }
+
+    public boolean isEnableSyntaxHighlighting() {
+        return enableSyntaxHighlighting;
+    }
+
+    public void setEnableSyntaxHighlighting(boolean enableSyntaxHighlighting) {
+        this.enableSyntaxHighlighting = enableSyntaxHighlighting;
+    }
+
+    public String getColorScheme() {
+        return colorScheme;
+    }
+
+    public void setColorScheme(String colorScheme) {
+        this.colorScheme = colorScheme;
     }
 }

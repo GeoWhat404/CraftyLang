@@ -41,7 +41,6 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
                  CraftScript.RUNTIME_ERROR_CODE -> Message.sendError("Program execution finished with code " + code + ".");
             case CraftScript.USER_REQUEST_CODE -> Message.sendSuccess("Program execution finished as per user request (" + code + ")");
         }
-        Message.sendNewline();
     }
 
     public void registerGlobals() {

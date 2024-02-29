@@ -12,10 +12,12 @@ import java.util.regex.Pattern;
 
 public final class SyntaxHighlighter {
 
-    private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+");
+    private static final Pattern NUMBER_PATTERN = Pattern.compile("(?<![a-zA-Z0-9])-?\\b\\d+\\b");
     private static final Pattern STRING_PATTERN = Pattern.compile("'[^']*'");
+    private static final Pattern COMMENT_PATTERN = Pattern.compile("(?<!')\\#.[a-z].*(?!')");
+    private static final Pattern PREPROCESSOR_PATTERN = Pattern.compile("(?<!')\\!.[a-z].*(?!')");
 
-    private final SyntaxColorPalette syntaxColorPalette;
+    private SyntaxColorPalette syntaxColorPalette;
     private final Collection<String> keywords;
     private final Pattern keywordsPattern;
 
@@ -23,6 +25,14 @@ public final class SyntaxHighlighter {
         this.syntaxColorPalette = syntaxColorPalette;
         this.keywords = Collections.unmodifiableCollection(keywords);
         this.keywordsPattern = combineKeywordsIntoRegex();
+    }
+
+    public SyntaxColorPalette getSyntaxColorPalette() {
+        return syntaxColorPalette;
+    }
+
+    public void setSyntaxColorPalette(SyntaxColorPalette syntaxColorPalette) {
+        this.syntaxColorPalette = syntaxColorPalette;
     }
 
     private Pattern combineKeywordsIntoRegex() {
@@ -36,6 +46,8 @@ public final class SyntaxHighlighter {
         component = replaceMatches(component, NUMBER_PATTERN, syntaxColorPalette.numberColor());
         component = replaceMatches(component, keywordsPattern, syntaxColorPalette.keywordColor());
         component = replaceMatches(component, STRING_PATTERN, syntaxColorPalette.stringColor());
+        component = replaceMatches(component, COMMENT_PATTERN, syntaxColorPalette.commentColor());
+        component = replaceMatches(component, PREPROCESSOR_PATTERN, syntaxColorPalette.preprocessorColor());
 
         return component;
     }
