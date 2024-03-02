@@ -1,7 +1,7 @@
 package me.geowhat.craftylang.interpreter;
 
 import me.geowhat.craftylang.interpreter.ast.Statement;
-import me.geowhat.craftylang.interpreter.error.Return;
+import me.geowhat.craftylang.interpreter.error.ReturnException;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class CraftScriptFunction implements CraftScriptCallable {
 
         try {
             interpreter.executeBlock(declaration.body, environment);
-        } catch (Return returnVal) {
+        } catch (ReturnException returnVal) {
             return returnVal.value;
         }
 

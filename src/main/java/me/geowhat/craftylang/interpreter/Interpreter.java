@@ -5,8 +5,10 @@ import me.geowhat.craftylang.client.CraftyLangSettings;
 import me.geowhat.craftylang.client.util.Message;
 import me.geowhat.craftylang.client.util.Scheduler;
 import me.geowhat.craftylang.interpreter.ast.Expression;
+import me.geowhat.craftylang.interpreter.ast.Parser;
 import me.geowhat.craftylang.interpreter.ast.Statement;
-import me.geowhat.craftylang.interpreter.error.Return;
+import me.geowhat.craftylang.interpreter.error.BreakException;
+import me.geowhat.craftylang.interpreter.error.ReturnException;
 import me.geowhat.craftylang.interpreter.error.RuntimeError;
 import me.geowhat.craftylang.mixin.MinecraftAccessor;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -25,7 +27,6 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     public Interpreter() {
         registerGlobals();
-
     }
 
     public void exitInterpreter(int code) {
@@ -412,8 +413,8 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     @Override
     public Void visitBreakStatement(Statement.BreakStatement statement) {
-        
-        return null;
+
+        throw new BreakException();
     }
 
     @Override
@@ -481,21 +482,23 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         if (statement.value != null)
             value = evaluate(statement.value);
 
-        throw new Return(value);
+        throw new ReturnException(value);
     }
 
     @Override
     public Void visitWhileStatement(Statement.WhileStatement statement) {
         int counter = 0;
 
-        while (isTruthy(evaluate(statement.condition))) {
-            if (counter++ > CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS) {
-                Message.sendDebug("While loop iteration limit reached (" + CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS + ")");
-                break;
-            }
+        try {
+            while (isTruthy(evaluate(statement.condition))) {
+                if (counter++ > CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS) {
+                    Message.sendDebug("While loop iteration limit reached (" + CraftyLangSettings.MAX_WHILE_LOOP_ITERATIONS + ")");
+                    break;
+                }
 
-            execute(statement.body);
-        }
+                execute(statement.body);
+            }
+        } catch (BreakException ignored) { }
         return null;
     }
 

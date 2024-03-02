@@ -155,9 +155,6 @@ public abstract class BookEditScreenMixin extends Screen {
 
             // TODO: fix this because this is a bit too much for a mixin :D
             StringBuilder builder = new StringBuilder();
-
-            System.out.println(pages);
-
             for (int i = 0; i < pages.size(); i++) {
                 builder.append(new Preprocessor(pages.get(i)));
                 builder.append(pages.get(i).replaceAll("![A-Za-z]+ [A-Za-z0-9]+", ""));

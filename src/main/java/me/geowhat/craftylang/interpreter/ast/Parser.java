@@ -14,6 +14,7 @@ public class Parser {
 
     private final List<Token> tokens;
     private int current = 0;
+    private int loopDepth = 0;
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
@@ -91,23 +92,29 @@ public class Parser {
         }
         consume(TokenType.RIGHT_PAREN, "Expected a \")\" after for clauses");
 
-        Statement body = statement();
+        try {
+            loopDepth++;
+            Statement body = statement();
 
-        if (increment != null) {
-            body = new Statement.BlockStatement(Arrays.asList(
-                            body, new Statement.ExpressionStatement(increment)));
+            if (increment != null) {
+                body = new Statement.BlockStatement(Arrays.asList(
+                        body, new Statement.ExpressionStatement(increment)));
+            }
+
+            if (condition == null)
+                condition = new Expression.LiteralExpression(true);
+
+            body = new Statement.WhileStatement(condition, body);
+
+            if (initializer != null) {
+                body = new Statement.BlockStatement(Arrays.asList(initializer, body));
+            }
+            return body;
+        } finally {
+            loopDepth--;
         }
 
-        if (condition == null)
-            condition = new Expression.LiteralExpression(true);
 
-        body = new Statement.WhileStatement(condition, body);
-
-        if (initializer != null) {
-            body = new Statement.BlockStatement(Arrays.asList(initializer, body));
-        }
-
-        return body;
     }
 
     private Statement varDeclaration() {
@@ -132,8 +139,11 @@ public class Parser {
     }
 
     private Statement breakStatement() {
-        consume(TokenType.SEMICOLON, "Expected a \";\" after break");
+        if (loopDepth == 0) {
+            throw parseError(previous(), "Break can only be used inside a loop");
+        }
 
+        consume(TokenType.SEMICOLON, "Expected a \";\" after break");
         return new Statement.BreakStatement();
     }
 
@@ -142,9 +152,14 @@ public class Parser {
         Expression condition = expression();
         consume(TokenType.RIGHT_PAREN, "Expected a \")\" after while condition");
 
-        Statement body = statement();
+        try {
+            loopDepth++;
+            Statement body = statement();
+            return new Statement.WhileStatement(condition, body);
+        } finally {
+            loopDepth--;
+        }
 
-        return new Statement.WhileStatement(condition, body);
     }
 
     private Statement ifStatement() {
@@ -418,7 +433,7 @@ public class Parser {
 
     private void error(Token token, String message) {
         CraftScript.error(token, message);
-        synchronize();
+        //synchronize();
     }
 
     private void synchronize() {
