@@ -156,13 +156,15 @@ public abstract class BookEditScreenMixin extends Screen {
             // TODO: fix this because this is a bit too much for a mixin :D
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i < pages.size(); i++) {
-                builder.append(new Preprocessor(pages.get(i)));
-                builder.append(pages.get(i).replaceAll("![A-Za-z]+ [A-Za-z0-9]+", ""));
+                builder.append(new Preprocessor(pages.get(i)
+                        .replaceAll("(?<!')#.*$", "")
+                        .replaceAll("![A-Za-z]+ [A-Za-z0-9]+", "")));
 
                 if (i < pages.size() - 1) {
                     builder.append("\n".repeat(Math.max(0, 14 - pages.get(i).split("\n").length + 1)));
                 }
             }
+            System.out.println(builder);
             CraftScript.run(builder.toString());
 
             this.updateButtonVisibility();

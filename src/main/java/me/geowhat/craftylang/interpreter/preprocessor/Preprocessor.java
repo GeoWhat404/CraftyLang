@@ -4,12 +4,12 @@ import me.geowhat.craftylang.interpreter.error.ModuleError;
 
 public class Preprocessor {
     
-    private final String src;
+    private String src;
     private final StringBuilder builder;
     
     public Preprocessor(String src) {
         this.src = src;
-        this.builder = new StringBuilder();
+        this.builder = new StringBuilder(src);
 
         for (int c = 0; c < src.length(); c++) {
             char current = src.charAt(c);
@@ -28,6 +28,13 @@ public class Preprocessor {
                 if (word.trim().equals("use")) {
                     resolveModule(wordIdx);
                 }
+            } else if (current == '#') {
+                int idx = c;
+                while (idx < src.length() && src.charAt(idx) != '\n') {
+                    builder.insert(idx, ' ');
+                    idx++;
+                }
+                c = idx;
             }
         }
     }
@@ -49,9 +56,9 @@ public class Preprocessor {
         try {
             loader = new ModuleLoader(module);
 
-            builder.append("$");
+            builder.append("$\n");
             builder.append(loader);
-            builder.append("$");
+            builder.append("\n$\n");
 
         } catch (ModuleError ignored) {
 

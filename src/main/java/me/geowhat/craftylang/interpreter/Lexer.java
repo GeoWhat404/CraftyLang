@@ -74,7 +74,6 @@ public class Lexer {
                 break;
 
             case '#':
-                while (peek() != '\n' && !isAtEnd()) advance();
                 break;
 
             case '\'':
